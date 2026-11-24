@@ -15,8 +15,7 @@
     {
       "binding": "DB",
       "database_name": "hello_interview",
-      // Replace with the id printed by `npx wrangler d1 create hello_interview`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "22168960-1293-4701-a55c-41a585345c37",
       "migrations_dir": "migrations"
     }
   ],
