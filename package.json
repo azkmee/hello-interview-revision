@@ -1,0 +1,2 @@
+{ "name": "hello-interview-revision", "private": true, "version": "1.0.0",
+  "dependencies": { "mongodb": "^6.8.0" } }

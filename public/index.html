@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Interview Revision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one column app, sticky tab bar (Study / Revise / Quiz), cards stacked inside. */
+:root{
+  --bg:#f4f6f8; --surface:#ffffff; --ink:#16212b; --muted:#5b6b7a; --line:#dde3e9;
+  --accent:#0b6bcb; --accent-ink:#ffffff; --accent-soft:#e3effc;
+  --good:#1b7f4b; --good-soft:#e1f3e9; --warn:#9a6a00; --warn-soft:#fbf0d3; --bad:#b4281f; --bad-soft:#fbe4e1;
+  --code-bg:#0f1b26; --code-ink:#d6e3ef;
+  --f-display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e151c; --surface:#16202a; --ink:#e6edf3; --muted:#93a3b3; --line:#27343f;
+    --accent:#5aa9f5; --accent-ink:#06121e; --accent-soft:#16304a;
+    --good:#58c98a; --good-soft:#143324; --warn:#e3b341; --warn-soft:#3a2f10; --bad:#f0827a; --bad-soft:#40201d;
+    --code-bg:#0a1118; --code-ink:#cfe0ee; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e151c; --surface:#16202a; --ink:#e6edf3; --muted:#93a3b3; --line:#27343f;
+  --accent:#5aa9f5; --accent-ink:#06121e; --accent-soft:#16304a;
+  --good:#58c98a; --good-soft:#143324; --warn:#e3b341; --warn-soft:#3a2f10; --bad:#f0827a; --bad-soft:#40201d;
+  --code-bg:#0a1118; --code-ink:#cfe0ee; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body)}
+.wrap{max-width:820px;margin:0 auto;padding:20px 16px 64px}
+header{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+h1{font:700 28px/1.15 var(--f-display);margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 12px;display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px}
+nav button{flex:1;font:500 15px var(--f-body);padding:10px 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:700 26px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.tile span{font-size:13px;color:var(--muted)}
+h2{font:600 13px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0;margin-bottom:10px;overflow:hidden}
+.card>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary .t{font:600 17px var(--f-display);flex:1;min-width:160px}
+.card>summary::after{content:"+";font:500 20px var(--f-mono);color:var(--muted)}
+.card[open]>summary::after{content:"\2212"}
+.body{padding:2px 16px 16px;border-top:1px solid var(--line)}
+.body h3{font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
+.body p{margin:0}
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:12px 14px;margin:6px 0 0;overflow-x:auto;font:400 13px/1.5 var(--f-mono)}
+.pill{font:500 12px var(--f-body);padding:3px 9px;border-radius:99px;border:1px solid transparent;white-space:nowrap}
+.new{background:var(--warn-soft);color:var(--warn)}
+.ok{background:var(--good-soft);color:var(--good)}
+.weak{background:var(--bad-soft);color:var(--bad)}
+.due{background:var(--accent-soft);color:var(--accent)}
+.meta{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn{font:500 15px var(--f-body);padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.good{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.btn.bad{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stage{padding:20px 18px}
+.stage .q{font:600 21px/1.3 var(--f-display);margin:8px 0 16px;text-wrap:balance}
+.progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.opt{display:block;width:100%;text-align:left;font:400 15px/1.45 var(--f-body);padding:12px 14px;margin-bottom:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.expl{margin-top:12px;padding:12px 14px;border-radius:8px;background:var(--accent-soft);font-size:15px}
+.ans{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+.scroll{overflow-x:auto}
+.how{font-size:14px;color:var(--muted);margin:0 0 14px}
+code.inline{font:400 13px var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Hello Interview Revision</h1>
+    <div class="sub" id="today"></div>
+    <div class="sub row"><span id="sync"></span><button class="btn" id="tokbtn" style="padding:4px 10px;font-size:13px">Set token</button></div>
+  </header>
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-study" aria-selected="true" data-tab="study">Study</button>
+    <button role="tab" id="tab-revise" aria-selected="false" data-tab="revise">Revise</button>
+    <button role="tab" id="tab-quiz" aria-selected="false" data-tab="quiz">Quiz</button>
+  </nav>
+  <main id="view"></main>
+</div>
+
+<script src="config.js"></script>
+<script>
+var TODAY = new Date().toISOString().slice(0,10);
+var INTERVALS = [1,3,7,14,30];
+
+var CONCEPTS = [
+ {id:"enc",topic:"OOP Pillars",title:"Encapsulation",
+  points:["Keep fields private and let them change only through authorized methods.","The object controls its own state, so those methods can validate and protect invariants.","Returning a mutable internal collection lets callers bypass your rules. Return an unmodifiable view or a copy."],
+  trade:"A getter and setter on every private field is not real encapsulation. Expose behaviour (withdraw), not raw state. View vs copy: a view is cheap but changes with the original; a copy is a stable snapshot. Both are shallow.",
+  code:"class Account {\n    private double balance;\n    void withdraw(double amount) {\n        if (amount <= 0 || amount > balance) throw new IllegalArgumentException();\n        balance -= amount;\n    }\n}\n\nclass Order {\n    private final List<Item> items = new ArrayList<>();\n    List<Item> getItems() { return Collections.unmodifiableList(items); }\n}",
+  test:"Why does a private final List field with a getItems() that returns it still break encapsulation?",
+  answer:"Callers get the real list and can clear or modify it, bypassing your rules. Return an unmodifiable view or a copy, and change state only through methods that enforce the rules."},
+ {id:"abstraction",topic:"OOP Pillars",title:"Abstraction",
+  points:["Expose what something does and hide how it does it.","Business logic defines the flow; variant-specific details (PayPal email, Stripe card token) stay inside implementations.","The contract is more than the signature: results, exceptions and side effects must be honoured too."],
+  trade:"Closest to DIP and OCP. Encapsulation protects an object's own state; abstraction hides complexity behind a simple contract. An implementation that compiles but breaks the promised behaviour violates LSP.",
+  code:"interface PaymentMethod { void pay(double amount); }\nclass PayPalPayment implements PaymentMethod { private final String email; public void pay(double a) {...} }\nclass StripePayment implements PaymentMethod { private final String cardToken; public void pay(double a) {...} }\n\nclass CheckoutService {\n    void checkout(PaymentMethod m, double total) { m.pay(total); }\n}",
+  test:"CheckoutService.checkout(PaymentMethod m, double total) just calls m.pay(total), and PayPalPayment and StripePayment both implement PaymentMethod. Which SOLID principle makes CheckoutService depend on PaymentMethod rather than StripePayment, and how is that different from encapsulation? Also: an implementation's pay() compiles but silently does nothing when the card is declined. What part of the contract did it break?",
+  answer:"DIP (and OCP): the service depends on the abstraction, so a new payment type is a new class. Encapsulation protects an object's own state; abstraction hides complexity behind a contract. The broken contract part: the promised behaviour, which is to charge exactly the amount or throw if it fails. A matching signature is not enough, and this is an LSP violation."},
+ {id:"inheritance",topic:"OOP Pillars",title:"Inheritance",
+  points:["Shared methods or state go in a parent class that children reuse.","Every child must be able to honour what it inherits. That is LSP."],
+  trade:"Tightest coupling in OOP: a parent change ripples into all children. Use it for true is-a; for has-a or code reuse prefer composition. Keep hierarchies shallow.",
+  code:"abstract class Employee {\n    double annualPay() { return monthlyPay() * 12; }\n    abstract double monthlyPay();\n}\nclass FullTimer extends Employee {...}\nclass Contractor extends Employee {...}\n\n// Bad\nclass Bird { void fly() {...} }\nclass Penguin extends Bird { }   // inherits fly() it can't do",
+  test:"Why does Penguin extends Bird with a fly() in Bird break the inheritance rule, and what are two ways to fix it?",
+  answer:"Penguin inherits something it can't honour (LSP). Fix: move fly() into a FlyingBird subclass, or use composition (a Flyer capability or interface)."},
+ {id:"polymorphism",topic:"OOP Pillars",title:"Polymorphism",
+  points:["The same method call behaves differently depending on the actual object type.","The caller uses the parent type or interface; the behaviour is picked at runtime (overriding, dynamic dispatch)."],
+  trade:"Runtime polymorphism = overriding. Compile-time = overloading. A chain of instanceof or switch on type is the smell that polymorphism is missing.",
+  code:"interface Shape { double area(); }\nclass Circle implements Shape {...}\nclass Square implements Shape {...}\n\nfor (Shape s : shapes) {\n    total += s.area();   // same call, different behaviour\n}",
+  test:"CheckoutService.checkout(PaymentMethod m, double total) calls m.pay(total), where PaymentMethod is an interface implemented by StripePayment and PayPalPayment. How does polymorphism let you add a GrabPayPayment without changing CheckoutService?",
+  answer:"The service calls pay() on the interface. A new payment type is a new class implementing it, and the right pay() runs at runtime."},
+ {id:"kiss",topic:"Software Design Principles",title:"KISS (Keep It Simple, Stupid)",
+  points:["Prefer the simplest solution that works.","Complexity must be justified by a real requirement."],
+  trade:"\"Simple\" means easy to understand and change, not necessarily fewest lines.",
+  code:"// Over-engineered\ninterface ParityStrategy { boolean test(int n); }\nclass EvenStrategy implements ParityStrategy { public boolean test(int n) { return n % 2 == 0; } }\nclass ParityStrategyFactory { static ParityStrategy even() { return new EvenStrategy(); } }\n\n// KISS\nboolean isEven(int n) { return n % 2 == 0; }",
+  test:"Your teammate added a Strategy + Factory to pick between two fixed behaviours. Which principle is violated and what would you do?",
+  answer:"KISS. Replace the Strategy + Factory with a plain conditional or method until a real requirement needs more variants."},
+ {id:"dry",topic:"Software Design Principles",title:"DRY (Don't Repeat Yourself)",
+  points:["Every piece of knowledge or logic should have a single authoritative place.","Duplication means a bug fix must be made in many places."],
+  trade:"Don't merge code that merely looks similar but changes for different reasons (coincidental duplication). A wrong abstraction costs more than duplication.",
+  code:"// Repeated in two controllers\nif (email == null || !email.contains(\"@\")) throw new BadRequestException();\n\n// DRY: one place\nclass EmailValidator {\n    static void validate(String email) {\n        if (email == null || !email.contains(\"@\")) throw new BadRequestException();\n    }\n}",
+  test:"Two methods look identical today but belong to different business rules. Should you DRY them? Why or why not?",
+  answer:"No. They change for different reasons, so merging couples two rules. Keep the duplication until the shared knowledge is real."},
+ {id:"yagni",topic:"Software Design Principles",title:"YAGNI (You Aren't Gonna Need It)",
+  points:["Don't build features or extension points for hypothetical future needs.","Build what is required now; refactor when the need is real."],
+  trade:"YAGNI is not \"ignore good design\". Keep code clean and easy to change; just don't implement unneeded features.",
+  code:"// Requirement: pay in SGD.\n// Don't add multi-currency conversion, a plugin system for\n// payment gateways, and a rates cache \"just in case\".",
+  test:"How does YAGNI differ from KISS?",
+  answer:"YAGNI is about scope: don't build unneeded features. KISS is about how you build what you do need: keep it simple."},
+ {id:"soc",topic:"Software Design Principles",title:"Separation of Concerns (SoC)",
+  points:["Split a system into parts, each handling a distinct concern: presentation, business logic, data access.","Changes in one concern don't ripple into others."],
+  trade:"SoC works at many levels (layers, modules, classes, methods). SRP is the class-level version of it.",
+  code:"@RestController class OrderController { /* HTTP only: parse request, return response */ }\n@Service class OrderService { /* business rules: pricing, validation */ }\n@Repository class OrderRepository { /* persistence only */ }\n// Anti-example: a controller that runs SQL and calculates tax.",
+  test:"Name the three concerns in a typical Spring Boot endpoint and where each lives.",
+  answer:"HTTP handling in the controller, business rules in the service, persistence in the repository."},
+ {id:"lod",topic:"Software Design Principles",title:"Law of Demeter",
+  points:["A method should only talk to its immediate friends: itself, its fields, its parameters, objects it creates.","Avoid chains like a.getB().getC().doX()."],
+  trade:"Fluent builders and stream pipelines are fine (same object or type returned). Overdoing it creates lots of pass-through wrapper methods.",
+  code:"// Violation: caller knows Order -> Customer -> Address\nString city = order.getCustomer().getAddress().getCity();\n\n// Better: Order exposes what callers need\nString city = order.getShippingCity();",
+  test:"Why does order.getCustomer().getAddress().getCity() make code brittle?",
+  answer:"The caller depends on the internal structure of Order, Customer and Address. Any change to that structure breaks every caller."},
+ {id:"srp",topic:"OO Design Principles (SOLID)",title:"SRP: Single Responsibility",
+  points:["A class should have one reason to change (one actor or responsibility)."],
+  trade:"Over-splitting creates many tiny classes. Split by reason to change, not by method count.",
+  code:"// Violation\nclass Invoice { double total() {...}  void print() {...}  void saveToDb() {...} }\n\n// SRP\nclass Invoice { double total() {...} }\nclass InvoicePrinter { void print(Invoice i) {...} }\nclass InvoiceRepository { void save(Invoice i) {...} }",
+  test:"What are the \"reasons to change\" in class Invoice { double total() {...} void print() {...} void saveToDb() {...} }, and who asks for each change?",
+  answer:"Calculation rules (finance), print format (design or customer-facing), and database persistence (engineering). Three reasons to change in one class, so split into Invoice, InvoicePrinter and InvoiceRepository."},
+ {id:"ocp",topic:"OO Design Principles (SOLID)",title:"OCP: Open/Closed",
+  points:["Open for extension, closed for modification.","Add new behaviour by adding new code (a new class), not editing tested code."],
+  trade:"Usually achieved with polymorphism (Strategy). Don't pre-abstract before you see a second variant (YAGNI).",
+  code:"// Violation: edit this method for every new customer type\ndouble discount(Customer c) {\n    if (c.type == REGULAR) return 0.05;\n    if (c.type == VIP) return 0.10;\n    return 0;\n}\n\n// OCP\ninterface DiscountPolicy { double discount(); }\nclass RegularDiscount implements DiscountPolicy { public double discount() { return 0.05; } }\nclass VipDiscount implements DiscountPolicy { public double discount() { return 0.10; } }",
+  test:"What smell in code tells you OCP is being violated?",
+  answer:"A growing if/else or switch on a type that you must edit for every new variant."},
+ {id:"lsp",topic:"OO Design Principles (SOLID)",title:"LSP: Liskov Substitution",
+  points:["A subclass must be usable anywhere its parent is used without breaking behaviour.","A subclass should only inherit what it can actually do. If it throws or no-ops a parent method, the hierarchy is wrong."],
+  trade:"A subclass shouldn't strengthen preconditions, weaken postconditions, or throw unexpected exceptions. Classic case: Square extends Rectangle.",
+  code:"// Violation\nclass Bird { void fly() {...} }\nclass Penguin extends Bird { void fly() { throw new UnsupportedOperationException(); } }\n\n// Fix: model the capability separately\nclass Bird { void eat() {...} }\nclass FlyingBird extends Bird { void fly() {...} }\nclass Sparrow extends FlyingBird {}\nclass Penguin extends Bird {}",
+  test:"How do you spot an LSP violation in code?",
+  answer:"instanceof checks on subtypes, overrides that throw UnsupportedOperationException, or empty overrides that do nothing."},
+ {id:"isp",topic:"OO Design Principles (SOLID)",title:"ISP: Interface Segregation",
+  points:["Prefer several small, focused interfaces over one fat one.","No class should be forced to implement methods it doesn't use."],
+  trade:"Too many tiny interfaces can scatter a concept. Group by the client's needs.",
+  code:"// Violation\ninterface Worker { void work(); void eat(); }\nclass RobotWorker implements Worker {\n    public void work() {...}\n    public void eat() { /* robots don't eat */ }\n}\n\n// ISP\ninterface Workable { void work(); }\ninterface Eatable { void eat(); }\nclass Human implements Workable, Eatable {...}\nclass Robot implements Workable {...}",
+  test:"How does ISP relate to SRP and to LSP?",
+  answer:"ISP is SRP applied to interfaces. Fat interfaces also force empty or throwing implementations, which is how LSP violations start."},
+ {id:"dip",topic:"OO Design Principles (SOLID)",title:"DIP: Dependency Inversion",
+  points:["High-level modules should depend on abstractions, not concrete low-level modules.","Details (how to send, which params) live in the implementation, not the business logic."],
+  trade:"DIP is the principle; dependency injection (Spring) is a technique to achieve it. It also makes unit testing easy: inject a mock sender.",
+  code:"interface MessageSender { void send(String to, String message); }\nclass EmailSender implements MessageSender { /* SMTP config lives here */ }\nclass SmsSender implements MessageSender { /* gateway API key lives here */ }\n\nclass NotificationService {\n    private final MessageSender sender;\n    NotificationService(MessageSender sender) { this.sender = sender; }\n    void notifyUser(User u, String msg) { sender.send(u.contact(), msg); }\n}",
+  test:"DIP vs Dependency Injection: what's the difference?",
+  answer:"DIP is the design rule (depend on abstractions). DI is a technique that supplies the concrete dependency from outside, such as constructor injection."},
+ {id:"abs-vs-int",topic:"Abstract Class, Interface & static",title:"Abstract class vs interface",
+  points:["Abstract class: related subclasses with a clear is-a relationship that share state (fields) or code. Single inheritance only.","Interface: a contract unrelated classes can implement (can-do capability). A class can implement many.","Rule of thumb: shared state or code plus is-a means abstract class. Only a contract or multiple capabilities means interface. Default to interface."],
+  trade:"Since Java 8 interfaces can have default methods, but still no instance state. Interfaces can't have constructors; abstract classes can.",
+  code:"abstract class Vehicle {\n    protected int fuelLevel;                         // shared state\n    void refuel(int amount) { fuelLevel += amount; } // shared code\n    abstract void move();                            // subclass-specific\n}\nclass Car extends Vehicle { void move() {...} }\nclass Boat extends Vehicle { void move() {...} }\n\ninterface Flyable { void fly(); }\nclass Sparrow implements Flyable { public void fly() {...} }\nclass Drone implements Flyable { public void fly() {...} }",
+  test:"You have Car, Boat (share fuel logic) and Drone, Bird (both fly). Which uses an abstract class and which an interface?",
+  answer:"Car and Boat: an abstract class (Vehicle) holding shared fuel state and code. Drone and Bird: an interface (Flyable), since they are unrelated and only share a capability."},
+ {id:"static",topic:"Abstract Class, Interface & static",title:"static (class-level members)",
+  points:["A static field or method belongs to the class, not to any object. One copy per class (per classloader) in the JVM, shared by all instances and subclasses.","Shared state only within the same JVM."],
+  trade:"Shared mutable static state is global state: hard to test, not thread-safe unless synchronised, bypasses DIP. Separate app instances or Lambda containers each have their own copy. Static methods are hidden, not overridden, and can't be abstract. Fine for constants, pure helpers and factory methods.",
+  code:"class Counter {\n    static int created = 0;   // one shared copy\n    int id;                   // one per object\n    Counter() { id = ++created; }\n}\nstatic final int MAX_RETRIES = 3;\nstatic boolean isValidEmail(String e) {...}",
+  test:"Two Spring Boot instances run behind a load balancer and both increment a static int request counter. What does each one see, and why is this a problem?",
+  answer:"Each sees only its own count, because static is per JVM. It is not shared state across servers; use a database or cache for that."},
+ {id:"factory",topic:"Design Patterns",title:"Factory (creational)",
+  points:["A factory decides which concrete implementation to create and returns it as the shared interface type. Callers never write new on a concrete class.","The interface plus one class per variant is the abstraction; the factory is the extra piece that picks which variant to build."],
+  trade:"The which-class decision lives in one place (DRY). Needs the shared interface (DIP). Adding a variant is a new class plus one line in the factory, so the factory itself is not perfectly OCP. Overkill with one implementation (KISS, YAGNI).",
+  code:"interface Notifier { void send(String to, String msg); }\nclass EmailNotifier implements Notifier {...}\nclass PushNotifier implements Notifier {...}\n\nclass NotifierFactory {\n    static Notifier create(Channel c) {\n        return switch (c) {\n            case EMAIL -> new EmailNotifier();\n            case PUSH  -> new PushNotifier();\n        };\n    }\n}\nNotifier n = NotifierFactory.create(user.preferredChannel());",
+  test:"A Notifier interface has EmailNotifier and PushNotifier implementations, and NotifierFactory.create(channel) returns the right one. Which part is the interface and implementations and which is the factory? What does the factory solve that the interface alone does not?",
+  answer:"The interface and its classes are the contract and variants. The factory chooses which one to create, so callers don't use new on a concrete class and the choice lives in one place."},
+ {id:"builder",topic:"Design Patterns",title:"Builder (creational)",
+  points:["Builds an object with many (often optional) parameters step by step.","A static nested Builder class has one method per parameter, each returning the builder, plus a final build(). A static builder() on the outer class is the entry point."],
+  trade:"Fixes the telescoping constructor problem. The result can be immutable and build() is one place to validate. Fluent chain is fine under Law of Demeter. Overkill for 2-3 required params. Lombok @Builder generates it.",
+  code:"HttpRequest req = HttpRequest.builder()\n    .url(\"https://api.x.com\")\n    .method(\"POST\")\n    .timeoutMs(5000)\n    .build();   // validates, returns immutable object\n\nstatic class Builder {\n    private String url;\n    private String method = \"GET\";\n    Builder url(String u) { this.url = u; return this; }\n    HttpRequest build() {\n        if (url == null) throw new IllegalStateException();\n        return new HttpRequest(this);\n    }\n}",
+  test:"A class has 8 fields, 5 of them optional. Why is a builder better than overloaded constructors, and where should validation go?",
+  answer:"Named, readable steps instead of guessing which argument is which, and no explosion of constructors. Validate once in build()."},
+ {id:"singleton",topic:"Design Patterns",title:"Singleton (creational)",
+  points:["Exactly one instance of a class with a global access point.","Typical uses: config manager, connection pool, expensive clients such as AWS SDK clients (create once outside the Lambda handler)."],
+  trade:"Same caveats as static: global state, hard to unit test, hides dependencies, breaks DIP. One per JVM, not cluster-wide. Mutable state must be thread-safe. Prefer a container-managed singleton (Spring bean) over a hand-written getInstance().",
+  code:"class ConfigManager {\n    private static final ConfigManager INSTANCE = new ConfigManager();\n    private ConfigManager() {}\n    static ConfigManager getInstance() { return INSTANCE; }\n}\n\n// Spring: beans are singletons by default and injectable\n@Service class PricingService {...}\n\n// Lambda: one client per warm container\nprivate static final S3Client S3 = S3Client.create();",
+  test:"Why is a hand-written getInstance() Singleton hard to unit test, and what is the usual fix in Spring? Is it one instance across all your servers?",
+  answer:"Callers depend on the concrete class so you can't swap in a mock. In Spring let the container manage a singleton bean and inject it. No: it is one per JVM or container."},
+ {id:"decorator",topic:"Design Patterns",title:"Decorator (structural)",
+  points:["Adds behaviour to an object by wrapping it in another object that implements the same interface.","The wrapper forwards calls to the wrapped object and adds its own logic before or after, with no change to the original class.","Main benefit: prevents subclass explosion. Features are combined at runtime instead of one subclass per combination."],
+  trade:"OCP: a new feature is a new wrapper. Inheritance needs up to 2^n classes for n optional features; decorators need n. Downsides: many small classes, wrapping order matters, harder to debug through layers. Strategy swaps how one thing is done; Decorator layers extra behaviour and can stack. Examples: BufferedReader(new FileReader(...)), Spring AOP proxies.",
+  code:"interface Notifier { void send(String msg); }\nclass EmailNotifier implements Notifier {...}\n\nabstract class NotifierDecorator implements Notifier {\n    protected final Notifier inner;\n    NotifierDecorator(Notifier inner) { this.inner = inner; }\n}\nclass LoggingNotifier extends NotifierDecorator {\n    LoggingNotifier(Notifier inner) { super(inner); }\n    public void send(String msg) {\n        log(\"sending: \" + msg);   // extra behaviour\n        inner.send(msg);          // delegate\n    }\n}\nclass RetryNotifier extends NotifierDecorator {...}\n\nNotifier n = new LoggingNotifier(new RetryNotifier(new EmailNotifier()));",
+  test:"You have EmailNotifier and SmsNotifier, and want any combination of logging, retry and encryption. How many subclasses would inheritance need, and how does Decorator avoid that? Does wrapping order matter?",
+  answer:"Inheritance needs a subclass for every combination, up to 2^3 = 8 per base notifier. Decorator needs 3 wrappers that you stack at runtime. Yes, order matters: retry around logging logs once, logging around retry logs every attempt."},
+ {id:"facade",topic:"Design Patterns",title:"Facade (structural)",
+  points:["One simple class that hides a complicated subsystem of several classes behind a small, easy interface.","The client calls one method; the facade coordinates the subsystem objects in the right order.","It doesn't add new behaviour, it simplifies using what is already there."],
+  trade:"Reduces coupling: clients depend on one class instead of many (Law of Demeter, SoC) and the call order lives in one place (DRY). Risks: it can grow into a god class (SRP), and clients can still bypass it. A Spring service coordinating several services is often a facade. Decorator wraps one object with the same interface to add behaviour; Facade gives a new, simpler interface over many objects. Adapter converts one interface to the one a client expects.",
+  code:"class OrderFacade {\n    private final InventoryService inventory;\n    private final PaymentService payment;\n    private final ShippingService shipping;\n    private final EmailService email;\n\n    String placeOrder(Cart cart, Customer c) {\n        if (!inventory.reserve(cart.sku(), cart.qty())) throw new OutOfStockException();\n        String orderId = payment.charge(c.id(), cart.total());\n        shipping.schedule(orderId, c.address());\n        email.sendReceipt(c.id(), orderId);\n        return orderId;\n    }\n}\n// Client: one call, no knowledge of the four services\nString id = orderFacade.placeOrder(cart, customer);",
+  test:"A controller calls inventory, payment, shipping and email services in a fixed order in three different endpoints. What pattern fixes this, and which principles does it support? How is it different from Decorator?",
+  answer:"Facade: one OrderFacade owns the sequence. It supports DRY, SoC and Law of Demeter. Decorator wraps one object with the same interface to add behaviour; Facade offers a new simpler interface over many objects."},
+ {id:"strategy",topic:"Design Patterns",title:"Strategy (behavioral)",
+  points:["Put each variation of an algorithm in its own class behind a shared interface and inject the one to use.","Replaces if/else or switch chains with polymorphism. The caller calls the same method; the injected class decides how.","Answers: how should I do this thing?"],
+  trade:"OCP in practice: new behaviour is a new class. Easy to test each alone. Not worth it for two fixed branches (KISS). Strategy vs State: a strategy is chosen from outside and doesn't change itself; states switch each other.",
+  code:"interface PricingStrategy { double price(double base); }\nclass RegularPricing implements PricingStrategy {...}\nclass VipPricing implements PricingStrategy {...}\n\nclass Cart {\n    private final PricingStrategy pricing;   // injected\n    Cart(PricingStrategy p) { this.pricing = p; }\n    double total(double base) { return pricing.price(base); }\n}",
+  test:"A method has an if/else chain on payment type. How do you refactor it with Strategy, and which SOLID principle does it satisfy?",
+  answer:"One class per payment type behind a PaymentStrategy interface, injected into the caller. This satisfies OCP: a new type is a new class."},
+ {id:"observer",topic:"Design Patterns",title:"Observer (behavioral)",
+  points:["A subject keeps a list of observers and broadcasts when something happens, expecting nothing back.","The subject doesn't know what observers do or how many there are. Each observer decides how to react.","Answers: who needs to know that this happened?"],
+  trade:"Loose coupling (SRP, OCP). Downsides: harder to trace the flow, one failing listener can break others, forgotten unsubscribes leak memory, ordering and sync vs async need a decision. Spring @EventListener is this pattern.",
+  code:"interface OrderListener { void onOrderPlaced(Order o); }\n\nclass OrderService {\n    private final List<OrderListener> listeners = new ArrayList<>();\n    void subscribe(OrderListener l) { listeners.add(l); }\n    void place(Order o) {\n        save(o);\n        listeners.forEach(l -> l.onOrderPlaced(o));\n    }\n}",
+  test:"OrderService.place(order) saves the order, then calls onOrderPlaced(order) on every subscribed OrderListener (for example EmailReceipt and InventoryUpdater). Why doesn't OrderService change when you add an SMS notification? Strategy vs Observer: which answers how and which answers who?",
+  answer:"The SMS notifier is just another listener subscribed to the service. Strategy answers how to do something; Observer answers who needs to know it happened."},
+ {id:"state",topic:"Design Patterns",title:"State (behavioral)",
+  points:["Each state of an object is its own class implementing a shared state interface: same methods, different logic and allowed transitions.","The object delegates to its current state and swaps it on a transition. A state machine without a giant if/else on a status field."],
+  trade:"Makes invalid transitions explicit and new states a new class (OCP). One class per state, so for 2-3 simple states an enum and switch is simpler (KISS). Unlike strategies, states know about each other because they return the next state.",
+  code:"interface OrderState { OrderState pay(); OrderState ship(); OrderState cancel(); }\nclass Created implements OrderState {\n    public OrderState pay()  { return new Paid(); }\n    public OrderState ship() { throw new IllegalStateException(\"pay first\"); }\n    ...\n}\nclass Order {\n    private OrderState state = new Created();\n    void pay() { state = state.pay(); }\n}",
+  test:"Why is State better than an if (status == ...) chain once an order has 6 statuses? How does it differ from Strategy?",
+  answer:"Each state owns its own rules and transitions, so there is no sprawling conditional and adding a state is a new class. Strategy is picked from outside and doesn't switch itself; State objects trigger the next state."}
+];
+
+var QUESTIONS = [
+ {topic:"Software Design Principles",q:"A requirement says \"pay in SGD\". A teammate adds multi-currency conversion and a plugin system for gateways. Which principle does this break?",
+  o:["YAGNI","DRY","Law of Demeter","LSP"],a:0,e:"YAGNI: don't build features for hypothetical future needs. Add them when the need is real."},
+ {topic:"Software Design Principles",q:"Two validators are identical today but enforce rules owned by different teams. What should you do?",
+  o:["Merge them into one shared class now","Leave them separate until the shared knowledge is real","Make one extend the other","Move both into a static utility"],a:1,e:"This is coincidental duplication. They change for different reasons, so merging couples unrelated rules."},
+ {topic:"Software Design Principles",q:"Which call chain most clearly violates the Law of Demeter?",
+  o:["builder.name(\"a\").age(3).build()","list.stream().filter(f).map(g).toList()","order.getCustomer().getAddress().getCity()","order.getShippingCity()"],a:2,e:"The caller must know the Order to Customer to Address structure. Builders and streams return the same type, so they are fine."},
+ {topic:"OO Design Principles (SOLID)",q:"Penguin extends Bird and overrides fly() to throw UnsupportedOperationException. Which principle is broken and what is the fix?",
+  o:["SRP: split Bird into two classes","OCP: add a PenguinFlyPolicy","LSP: model flying as a separate capability, so Penguin doesn't inherit fly()","DIP: inject a Flyer into Bird"],a:2,e:"A subclass must work wherever its parent does. Move fly() to FlyingBird so Penguin only inherits what it can do."},
+ {topic:"OO Design Principles (SOLID)",q:"discount(Customer c) has an if/else for each customer type, and you edit it for every new type. What is the best refactor?",
+  o:["Add a switch statement","A DiscountPolicy interface with one class per type","Move the logic into the Customer constructor","Make discount() static"],a:1,e:"OCP: new type means a new class implementing DiscountPolicy, with existing code untouched."},
+ {topic:"OO Design Principles (SOLID)",q:"RobotWorker implements Worker and leaves eat() empty. Which principle does the fix target?",
+  o:["ISP: split Worker into Workable and Eatable","DIP: inject a Worker","KISS: remove the interface","SoC: add a service layer"],a:0,e:"Interface Segregation: no class should be forced to implement methods it doesn't use."},
+ {topic:"OO Design Principles (SOLID)",q:"Which statement about DIP and dependency injection is correct?",
+  o:["They are the same thing","DIP is a technique, DI is a principle","DIP is the principle; DI (like constructor injection) is a technique to achieve it","DI requires Spring; DIP does not"],a:2,e:"DIP says depend on abstractions. DI supplies the concrete implementation from outside, which also makes mocking easy in tests."},
+ {topic:"Abstract Class, Interface & static",q:"Car and Boat share fuel-level state and a refuel() method. Drone and Bird are unrelated but both fly. What fits?",
+  o:["Interface for Car/Boat, abstract class for Drone/Bird","Abstract class for both pairs","Interface for both pairs","Abstract class for Car/Boat, interface for Drone/Bird"],a:3,e:"Shared state and code with an is-a relationship means an abstract class. A shared capability across unrelated types means an interface."},
+ {topic:"Software Design Principles",q:"In a Spring Boot app, a controller runs SQL and calculates tax. Which principle does this violate?",
+  o:["Separation of Concerns","YAGNI","Law of Demeter","Open/Closed"],a:0,e:"HTTP handling, business rules and persistence are separate concerns. Put them in the controller, service and repository."},
+ {topic:"Design Patterns",q:"A method has a long if/else on payment type, and you add a branch for each new type. Which pattern removes the chain?",
+  o:["Singleton","Strategy","Builder","Observer"],a:1,e:"Strategy: one class per variant behind an interface, injected into the caller. A new type is a new class, which is OCP."},
+ {topic:"Design Patterns",q:"OrderService must tell email, inventory and analytics code that an order was placed, without knowing what they do. Which pattern fits?",
+  o:["Observer","State","Factory","Strategy"],a:0,e:"Observer: the subject broadcasts to subscribers and expects nothing back. Each observer decides how to react."},
+ {topic:"Design Patterns",q:"An Order moves Created, Paid, Shipped, Cancelled, and each status allows different actions. Which pattern models this best?",
+  o:["Builder","Singleton","Observer","State"],a:3,e:"State: each status is a class with the same methods but different logic and transitions, so no status if/else chain."},
+ {topic:"Design Patterns",q:"A class has 8 fields, 5 optional, and callers can't tell which constructor argument is which. What helps most?",
+  o:["Builder","Factory","Singleton","A static utility class"],a:0,e:"Builder: named steps, defaults for optional fields, and validation once in build()."},
+ {topic:"Design Patterns",q:"Why is a hand-written getInstance() Singleton a problem for unit tests, and what does Spring offer instead?",
+  o:["It is slow; use a thread pool","Callers depend on the concrete class so it can't be mocked; use a container-managed singleton bean and inject it","It is not thread-safe; use synchronized everywhere","It can only hold constants; use static final"],a:1,e:"Hidden global access breaks DIP. A Spring bean is still one instance but is injected, so tests can substitute a mock."},
+ {topic:"Design Patterns",q:"Three endpoints each call inventory, payment, shipping and email services in the same order. Which pattern removes the repetition and the coupling?",
+  o:["Facade","Singleton","Observer","Builder"],a:0,e:"Facade: one class owns the sequence and gives clients a single simple call. It is a new interface over many objects, unlike Decorator, which wraps one object with the same interface."},
+ {topic:"Design Patterns",q:"You want any combination of logging, retry and encryption on top of EmailNotifier and SmsNotifier, without a subclass for every combination. Which pattern?",
+  o:["Decorator","Singleton","State","Factory"],a:0,e:"Decorator: stackable wrappers implementing the same interface. It avoids subclass explosion by composing features at runtime."},
+ {topic:"Design Patterns",q:"Strategy vs State: what is the key difference?",
+  o:["Strategy is chosen from outside and doesn't change itself; State objects switch to the next state","State uses interfaces, Strategy uses abstract classes","Strategy is creational, State is structural","There is no difference"],a:0,e:"Both swap behaviour via an object. A strategy is injected and stays, while states represent a lifecycle and return the next state."}
+];
+
+var state = {
+  tab:"study",
+  cards:{},            // id -> {stage, next, status}
+  rev:{order:[],i:0,shown:false,done:0},
+  quiz:{qs:[],i:0,picked:null,score:0,miss:[],finished:false,started:false}
+};
+CONCEPTS.forEach(function(c){ state.cards[c.id]={stage:0,next:"2026-11-24",status:"new",learned:TODAY}; });
+
+function $(s,r){return (r||document).querySelector(s);}
+function el(tag,attrs,kids){
+  var n=document.createElement(tag);
+  if(attrs){Object.keys(attrs).forEach(function(k){
+    if(k==="class")n.className=attrs[k]; else if(k==="text")n.textContent=attrs[k];
+    else if(k.indexOf("on")===0)n.addEventListener(k.slice(2),attrs[k]); else n.setAttribute(k,attrs[k]);});}
+  (kids||[]).forEach(function(c){ if(c==null)return; n.appendChild(typeof c==="string"?document.createTextNode(c):c);});
+  return n;
+}
+function addDays(d,n){var t=new Date(d+"T00:00:00Z");t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);}
+function statusPill(c){
+  var s=state.cards[c.id];
+  if(s.status==="weak")return el("span",{class:"pill weak",text:"Weak"});
+  if(s.status==="ok")return el("span",{class:"pill ok",text:"Stage "+s.stage}) ;
+  return el("span",{class:"pill new",text:"New"});
+}
+function duePill(c){
+  var s=state.cards[c.id];
+  var due = s.next<=TODAY;
+  return el("span",{class:"pill "+(due?"due":"meta"),text:(due?"Due now":"Next "+s.next)});
+}
+function groupByTopic(){
+  var g={},order=[];
+  CONCEPTS.forEach(function(c){ if(!g[c.topic]){g[c.topic]=[];order.push(c.topic);} g[c.topic].push(c);});
+  return order.map(function(t){return {topic:t,items:g[t]};});
+}
+
+/* ---------- Study ---------- */
+function renderStudy(root){
+  var dueCount=CONCEPTS.filter(function(c){return state.cards[c.id].next<=TODAY;}).length;
+  var weak=CONCEPTS.filter(function(c){return state.cards[c.id].status==="weak";}).length;
+  var nextDate=CONCEPTS.map(function(c){return state.cards[c.id].next;}).sort()[0];
+  root.appendChild(el("div",{class:"summary"},[
+    el("div",{class:"tile"},[el("b",{text:String(CONCEPTS.length)}),el("span",{text:"concepts in Low Level Design"})]),
+    el("div",{class:"tile"},[el("b",{text:String(dueCount)}),el("span",{text:"due today"})]),
+    el("div",{class:"tile"},[el("b",{text:String(weak)}),el("span",{text:"marked weak"})]),
+    el("div",{class:"tile"},[el("b",{text:nextDate}),el("span",{text:"next review"})])
+  ]));
+  root.appendChild(el("p",{class:"how",text:"Each card holds key points, trade-offs, an example and a self-test question. Reviews come at +1, +3, +7, +14 and +30 days."}));
+  groupByTopic().forEach(function(g){
+    root.appendChild(el("h2",{text:g.topic+" ("+g.items.length+")"}));
+    g.items.forEach(function(c){
+      var s=state.cards[c.id];
+      var d=el("details",{class:"card"});
+      d.appendChild(el("summary",{},[el("span",{class:"t",text:c.title}),statusPill(c),duePill(c)]));
+      var b=el("div",{class:"body"});
+      b.appendChild(el("h3",{text:"Key points"}));
+      var ul=el("ul",{style:"margin:0;padding-left:20px"});
+      c.points.forEach(function(p){ul.appendChild(el("li",{text:p}));});
+      b.appendChild(ul);
+      b.appendChild(el("h3",{text:"Example"}));
+      b.appendChild(el("pre",{text:c.code}));
+      b.appendChild(el("h3",{text:"Trade-offs"}));
+      b.appendChild(el("p",{text:c.trade}));
+      b.appendChild(el("h3",{text:"Self-test"}));
+      b.appendChild(el("p",{text:c.test}));
+      b.appendChild(el("p",{class:"meta",style:"margin-top:12px",text:"Learned "+s.learned+" · Stage "+s.stage+" · Next review "+s.next}));
+      d.appendChild(b);
+      root.appendChild(d);
+    });
+  });
+}
+
+/* ---------- Revise ---------- */
+function buildRevise(){
+  var order=CONCEPTS.slice().sort(function(a,b){
+    var A=state.cards[a.id],B=state.cards[b.id];
+    var wa=A.status==="weak"?0:1, wb=B.status==="weak"?0:1;
+    if(wa!==wb)return wa-wb;
+    return A.next<B.next?-1:A.next>B.next?1:0;
+  });
+  state.rev={order:order.map(function(c){return c.id;}),i:0,shown:false,done:0};
+}
+function renderRevise(root){
+  if(!state.rev.order.length)buildRevise();
+  var r=state.rev, total=r.order.length;
+  root.appendChild(el("p",{class:"how",text:"Read the question, answer it in your head, reveal, then rate yourself. Got it moves the concept to the next interval. Struggled resets it to +1 day and marks it weak."}));
+  var prog=el("div",{class:"progress"},[el("i",{style:"width:"+Math.round(r.done/total*100)+"%"})]);
+  root.appendChild(prog);
+  if(r.i>=total){
+    var weak=r.order.filter(function(id){return state.cards[id].status==="weak";});
+    root.appendChild(el("div",{class:"card stage"},[
+      el("div",{class:"q",text:"Revision round finished"}),
+      el("p",{text:(total-weak.length)+" recalled, "+weak.length+" marked weak."}),
+      weak.length?el("p",{class:"meta",text:"Weak: "+weak.map(function(id){return CONCEPTS.filter(function(c){return c.id===id;})[0].title;}).join(", ")}):null,
+      el("div",{class:"row",style:"margin-top:14px"},[el("button",{class:"btn primary",text:"Start another round",onclick:function(){buildRevise();render();}})])
+    ]));
+    return;
+  }
+  var c=CONCEPTS.filter(function(x){return x.id===r.order[r.i];})[0];
+  var s=state.cards[c.id];
+  var card=el("div",{class:"card stage"});
+  card.appendChild(el("div",{class:"row"},[el("span",{class:"meta",text:(r.i+1)+" of "+total}),statusPill(c),el("span",{class:"meta",text:c.topic})]));
+  card.appendChild(el("div",{class:"q",text:c.test}));
+  if(!r.shown){
+    card.appendChild(el("button",{class:"btn primary",text:"Show answer",onclick:function(){state.rev.shown=true;render();}}));
+  }else{
+    card.appendChild(el("div",{class:"ans"},[el("b",{text:c.title}),el("p",{style:"margin:6px 0 0",text:c.answer})]));
+    var ul=el("ul",{style:"margin:12px 0 0;padding-left:20px"});
+    c.points.forEach(function(p){ul.appendChild(el("li",{text:p}));});
+    card.appendChild(ul);
+    card.appendChild(el("div",{class:"row",style:"margin-top:16px"},[
+      el("button",{class:"btn good",text:"Got it",onclick:function(){rate(c.id,true);}}),
+      el("button",{class:"btn bad",text:"Struggled",onclick:function(){rate(c.id,false);}})
+    ]));
+  }
+  root.appendChild(card);
+}
+function rate(id,good){
+  var s=state.cards[id];
+  if(good){
+    s.stage=Math.min(s.stage+1,INTERVALS.length);
+    s.next=addDays(TODAY,INTERVALS[Math.min(s.stage,INTERVALS.length)-1]);
+    s.status="ok";
+  }else{
+    s.stage=0; s.next=addDays(TODAY,1); s.status="weak";
+  }
+  state.rev.i++; state.rev.done++; state.rev.shown=false;
+  save();
+  render();
+}
+
+/* ---------- Quiz ---------- */
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function startQuiz(){
+  var qs=shuffle(QUESTIONS).slice(0,5).map(function(q){
+    var idx=shuffle(q.o.map(function(_,i){return i;}));
+    return {topic:q.topic,q:q.q,e:q.e,o:idx.map(function(i){return q.o[i];}),a:idx.indexOf(q.a)};
+  });
+  state.quiz={qs:qs,i:0,picked:null,score:0,miss:[],finished:false,started:true};
+}
+function renderQuiz(root){
+  var z=state.quiz;
+  if(!z.started){
+    root.appendChild(el("p",{class:"how",text:"Five questions drawn from your concepts: scenarios, X vs Y and trade-offs. Pick an answer and you see the explanation straight away."}));
+    root.appendChild(el("div",{class:"card stage"},[
+      el("div",{class:"q",text:"Quiz me on Low Level Design"}),
+      el("p",{class:"meta",text:"Covers OOP pillars, design principles, SOLID, abstract class vs interface and design patterns."}),
+      el("button",{class:"btn primary",text:"Start quiz",onclick:function(){startQuiz();render();}})
+    ]));
+    return;
+  }
+  if(z.finished){ renderResult(root); return; }
+  var q=z.qs[z.i];
+  root.appendChild(el("div",{class:"progress"},[el("i",{style:"width:"+Math.round(z.i/z.qs.length*100)+"%"})]));
+  var card=el("div",{class:"card stage"});
+  card.appendChild(el("div",{class:"row"},[el("span",{class:"meta",text:"Question "+(z.i+1)+" of "+z.qs.length}),el("span",{class:"meta",text:q.topic})]));
+  card.appendChild(el("div",{class:"q",text:q.q}));
+  q.o.forEach(function(t,i){
+    var cls="opt";
+    if(z.picked!==null){ if(i===q.a)cls+=" right"; else if(i===z.picked)cls+=" wrong"; }
+    var b=el("button",{class:cls,text:t,onclick:function(){ if(z.picked!==null)return; z.picked=i; if(i===q.a)z.score++; else z.miss.push(q.topic); render(); }});
+    if(z.picked!==null)b.setAttribute("disabled","");
+    card.appendChild(b);
+  });
+  if(z.picked!==null){
+    card.appendChild(el("div",{class:"expl",text:(z.picked===q.a?"Correct. ":"Not quite. ")+q.e}));
+    card.appendChild(el("div",{class:"row",style:"margin-top:14px"},[
+      el("button",{class:"btn primary",text:z.i===z.qs.length-1?"See result":"Next question",onclick:function(){
+        if(z.i===z.qs.length-1){z.finished=true;logQuiz();} else {z.i++; z.picked=null;} render(); }})
+    ]));
+  }
+  root.appendChild(card);
+}
+function renderResult(root){
+  var z=state.quiz, n=z.qs.length;
+  var weakTopics=[]; z.miss.forEach(function(t){ if(weakTopics.indexOf(t)<0)weakTopics.push(t); });
+  var line="| "+TODAY+" | "+z.score+"/"+n+" | "+z.qs.map(function(q){return q.topic;}).filter(function(t,i,a){return a.indexOf(t)===i;}).join("; ")+" | "+(weakTopics.join("; ")||"none")+" |";
+  var card=el("div",{class:"card stage"});
+  card.appendChild(el("div",{class:"q",text:"You scored "+z.score+" out of "+n}));
+  card.appendChild(el("p",{text:weakTopics.length?"Revisit: "+weakTopics.join(", ")+".":"No weak spots this round."}));
+  card.appendChild(el("h3",{style:"font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px",text:"Quiz log row"}));
+  card.appendChild(el("pre",{text:line}));
+  var msg=el("span",{class:"meta",text:""});
+  card.appendChild(el("div",{class:"row",style:"margin-top:14px"},[
+    el("button",{class:"btn primary",text:"New quiz",onclick:function(){startQuiz();render();}}),
+    el("button",{class:"btn",text:"Copy log row",onclick:function(){
+      try{ navigator.clipboard.writeText(line).then(function(){msg.textContent="Copied.";},function(){msg.textContent="Copy blocked. Select the row above.";}); }
+      catch(e){ msg.textContent="Copy blocked. Select the row above."; }
+    }}),
+    msg
+  ]));
+  root.appendChild(card);
+  root.appendChild(el("h2",{text:"Quiz log"}));
+  var rows=el("div",{class:"scroll"},[el("table",{},[
+    el("thead",{},[el("tr",{},[el("th",{text:"Date"}),el("th",{text:"Score"}),el("th",{text:"Topics"}),el("th",{text:"Weak spots"})])]),
+    el("tbody",{},state.log.slice(-10).reverse().map(function(r){return el("tr",{},[el("td",{text:r.date}),el("td",{text:r.score+"/"+r.n}),el("td",{text:r.topics.join("; ")}),el("td",{text:r.weak.join("; ")||"none"})]);}))
+  ])]);
+  root.appendChild(rows);
+}
+
+/* ---------- Shell ---------- */
+function render(){
+  var root=$("#view"); root.textContent="";
+  if(state.tab==="study")renderStudy(root);
+  else if(state.tab==="revise")renderRevise(root);
+  else renderQuiz(root);
+  ["study","revise","quiz"].forEach(function(t){ $("#tab-"+t).setAttribute("aria-selected",String(state.tab===t)); });
+}
+document.querySelectorAll("nav button").forEach(function(b){
+  b.addEventListener("click",function(){ state.tab=b.getAttribute("data-tab"); location.hash=state.tab; render(); window.scrollTo(0,0); });
+});
+function fromHash(){ var h=location.hash.replace("#",""); if(h==="study"||h==="revise"||h==="quiz"){state.tab=h;} }
+window.addEventListener("hashchange",function(){fromHash();render();});
+$("#today").textContent="Low Level Design · "+TODAY;
+
+/* ---------- Sync (Mongo via /api/state) ---------- */
+var API=(window.APP_CONFIG&&window.APP_CONFIG.apiBase)||"";
+state.log=[]; state.sync="local";
+function tok(){try{return localStorage.getItem("hi_token")||"";}catch(e){return "";}}
+function setSync(t){state.sync=t;var n=$("#sync");if(n)n.textContent=({local:"Not synced (no API configured)",ok:"Synced",saving:"Saving...",err:"Sync failed",auth:"Token needed"})[t];}
+function api(method,body){
+  return fetch(API+"/api/state",{method:method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},body:body?JSON.stringify(body):undefined})
+    .then(function(r){ if(r.status===401){setSync("auth");throw new Error("auth");} if(!r.ok)throw new Error(String(r.status)); return r.json(); });
+}
+function load(){
+  if(!API){setSync("local");return Promise.resolve();}
+  return api("GET").then(function(d){
+    Object.keys(d.cards||{}).forEach(function(id){ if(state.cards[id])Object.assign(state.cards[id],d.cards[id]); });
+    state.log=d.log||[]; setSync("ok");
+  }).catch(function(){ if(state.sync!=="auth")setSync("err"); });
+}
+function save(){
+  if(!API)return; setSync("saving");
+  api("PUT",{cards:state.cards,log:state.log}).then(function(){setSync("ok");}).catch(function(){ if(state.sync!=="auth")setSync("err"); });
+}
+function logQuiz(){
+  var z=state.quiz, weak=[]; z.miss.forEach(function(t){ if(weak.indexOf(t)<0)weak.push(t); });
+  var topics=z.qs.map(function(q){return q.topic;}).filter(function(t,i,a){return a.indexOf(t)===i;});
+  state.log.push({date:TODAY,score:z.score,n:z.qs.length,topics:topics,weak:weak});
+  save();
+}
+$("#tokbtn").addEventListener("click",function(){
+  var t=prompt("Access token (the APP_TOKEN set on the API)");
+  if(t===null)return;
+  try{localStorage.setItem("hi_token",t.trim());}catch(e){}
+  load().then(render);
+});
+fromHash(); render(); load().then(render);
+</script>
+</body>
+</html>
