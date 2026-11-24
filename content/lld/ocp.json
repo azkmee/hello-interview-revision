@@ -1,0 +1,28 @@
+{
+  "id": "ocp",
+  "topic": "OO Design Principles (SOLID)",
+  "title": "OCP: Open/Closed",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "Open for extension, closed for modification.",
+    "Add new behaviour by adding new code (a new class), not editing tested code."
+  ],
+  "trade": "Usually achieved with polymorphism (Strategy). Don't pre-abstract before you see a second variant (YAGNI).",
+  "code": "// Violation: edit this method for every new customer type\ndouble discount(Customer c) {\n    if (c.type == REGULAR) return 0.05;\n    if (c.type == VIP) return 0.10;\n    return 0;\n}\n\n// OCP\ninterface DiscountPolicy { double discount(); }\nclass RegularDiscount implements DiscountPolicy { public double discount() { return 0.05; } }\nclass VipDiscount implements DiscountPolicy { public double discount() { return 0.10; } }",
+  "test": "What smell in code tells you OCP is being violated?",
+  "answer": "A growing if/else or switch on a type that you must edit for every new variant.",
+  "questions": [
+    {
+      "question": "discount(Customer c) has an if/else for each customer type, and you edit it for every new type. What is the best refactor?",
+      "options": [
+        "Add a switch statement",
+        "A DiscountPolicy interface with one class per type",
+        "Move the logic into the Customer constructor",
+        "Make discount() static"
+      ],
+      "correct": 1,
+      "explanation": "OCP: new type means a new class implementing DiscountPolicy, with existing code untouched."
+    }
+  ]
+}

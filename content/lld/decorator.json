@@ -1,0 +1,29 @@
+{
+  "id": "decorator",
+  "topic": "Design Patterns",
+  "title": "Decorator (structural)",
+  "order": 4,
+  "added": "2026-11-24",
+  "points": [
+    "Adds behaviour to an object by wrapping it in another object that implements the same interface.",
+    "The wrapper forwards calls to the wrapped object and adds its own logic before or after, with no change to the original class.",
+    "Main benefit: prevents subclass explosion. Features are combined at runtime instead of one subclass per combination."
+  ],
+  "trade": "OCP: a new feature is a new wrapper. Inheritance needs up to 2^n classes for n optional features; decorators need n. Downsides: many small classes, wrapping order matters, harder to debug through layers. Strategy swaps how one thing is done; Decorator layers extra behaviour and can stack. Examples: BufferedReader(new FileReader(...)), Spring AOP proxies.",
+  "code": "interface Notifier { void send(String msg); }\nclass EmailNotifier implements Notifier {...}\n\nabstract class NotifierDecorator implements Notifier {\n    protected final Notifier inner;\n    NotifierDecorator(Notifier inner) { this.inner = inner; }\n}\nclass LoggingNotifier extends NotifierDecorator {\n    LoggingNotifier(Notifier inner) { super(inner); }\n    public void send(String msg) {\n        log(\"sending: \" + msg);   // extra behaviour\n        inner.send(msg);          // delegate\n    }\n}\nclass RetryNotifier extends NotifierDecorator {...}\n\nNotifier n = new LoggingNotifier(new RetryNotifier(new EmailNotifier()));",
+  "test": "You have EmailNotifier and SmsNotifier, and want any combination of logging, retry and encryption. How many subclasses would inheritance need, and how does Decorator avoid that? Does wrapping order matter?",
+  "answer": "Inheritance needs a subclass for every combination, up to 2^3 = 8 per base notifier. Decorator needs 3 wrappers that you stack at runtime. Yes, order matters: retry around logging logs once, logging around retry logs every attempt.",
+  "questions": [
+    {
+      "question": "You want any combination of logging, retry and encryption on top of EmailNotifier and SmsNotifier, without a subclass for every combination. Which pattern?",
+      "options": [
+        "Decorator",
+        "Singleton",
+        "State",
+        "Factory"
+      ],
+      "correct": 0,
+      "explanation": "Decorator: stackable wrappers implementing the same interface. It avoids subclass explosion by composing features at runtime."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "dry",
+  "topic": "Software Design Principles",
+  "title": "DRY (Don't Repeat Yourself)",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "Every piece of knowledge or logic should have a single authoritative place.",
+    "Duplication means a bug fix must be made in many places."
+  ],
+  "trade": "Don't merge code that merely looks similar but changes for different reasons (coincidental duplication). A wrong abstraction costs more than duplication.",
+  "code": "// Repeated in two controllers\nif (email == null || !email.contains(\"@\")) throw new BadRequestException();\n\n// DRY: one place\nclass EmailValidator {\n    static void validate(String email) {\n        if (email == null || !email.contains(\"@\")) throw new BadRequestException();\n    }\n}",
+  "test": "Two methods look identical today but belong to different business rules. Should you DRY them? Why or why not?",
+  "answer": "No. They change for different reasons, so merging couples two rules. Keep the duplication until the shared knowledge is real.",
+  "questions": [
+    {
+      "question": "Two validators are identical today but enforce rules owned by different teams. What should you do?",
+      "options": [
+        "Merge them into one shared class now",
+        "Leave them separate until the shared knowledge is real",
+        "Make one extend the other",
+        "Move both into a static utility"
+      ],
+      "correct": 1,
+      "explanation": "This is coincidental duplication. They change for different reasons, so merging couples unrelated rules."
+    }
+  ]
+}

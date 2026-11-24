@@ -1,0 +1,29 @@
+{
+  "id": "facade",
+  "topic": "Design Patterns",
+  "title": "Facade (structural)",
+  "order": 5,
+  "added": "2026-11-24",
+  "points": [
+    "One simple class that hides a complicated subsystem of several classes behind a small, easy interface.",
+    "The client calls one method; the facade coordinates the subsystem objects in the right order.",
+    "It doesn't add new behaviour, it simplifies using what is already there."
+  ],
+  "trade": "Reduces coupling: clients depend on one class instead of many (Law of Demeter, SoC) and the call order lives in one place (DRY). Risks: it can grow into a god class (SRP), and clients can still bypass it. A Spring service coordinating several services is often a facade. Decorator wraps one object with the same interface to add behaviour; Facade gives a new, simpler interface over many objects. Adapter converts one interface to the one a client expects.",
+  "code": "class OrderFacade {\n    private final InventoryService inventory;\n    private final PaymentService payment;\n    private final ShippingService shipping;\n    private final EmailService email;\n\n    String placeOrder(Cart cart, Customer c) {\n        if (!inventory.reserve(cart.sku(), cart.qty())) throw new OutOfStockException();\n        String orderId = payment.charge(c.id(), cart.total());\n        shipping.schedule(orderId, c.address());\n        email.sendReceipt(c.id(), orderId);\n        return orderId;\n    }\n}\n// Client: one call, no knowledge of the four services\nString id = orderFacade.placeOrder(cart, customer);",
+  "test": "A controller calls inventory, payment, shipping and email services in a fixed order in three different endpoints. What pattern fixes this, and which principles does it support? How is it different from Decorator?",
+  "answer": "Facade: one OrderFacade owns the sequence. It supports DRY, SoC and Law of Demeter. Decorator wraps one object with the same interface to add behaviour; Facade offers a new simpler interface over many objects.",
+  "questions": [
+    {
+      "question": "Three endpoints each call inventory, payment, shipping and email services in the same order. Which pattern removes the repetition and the coupling?",
+      "options": [
+        "Facade",
+        "Singleton",
+        "Observer",
+        "Builder"
+      ],
+      "correct": 0,
+      "explanation": "Facade: one class owns the sequence and gives clients a single simple call. It is a new interface over many objects, unlike Decorator, which wraps one object with the same interface."
+    }
+  ]
+}

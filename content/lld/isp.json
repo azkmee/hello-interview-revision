@@ -1,0 +1,28 @@
+{
+  "id": "isp",
+  "topic": "OO Design Principles (SOLID)",
+  "title": "ISP: Interface Segregation",
+  "order": 4,
+  "added": "2026-11-24",
+  "points": [
+    "Prefer several small, focused interfaces over one fat one.",
+    "No class should be forced to implement methods it doesn't use."
+  ],
+  "trade": "Too many tiny interfaces can scatter a concept. Group by the client's needs.",
+  "code": "// Violation\ninterface Worker { void work(); void eat(); }\nclass RobotWorker implements Worker {\n    public void work() {...}\n    public void eat() { /* robots don't eat */ }\n}\n\n// ISP\ninterface Workable { void work(); }\ninterface Eatable { void eat(); }\nclass Human implements Workable, Eatable {...}\nclass Robot implements Workable {...}",
+  "test": "How does ISP relate to SRP and to LSP?",
+  "answer": "ISP is SRP applied to interfaces. Fat interfaces also force empty or throwing implementations, which is how LSP violations start.",
+  "questions": [
+    {
+      "question": "RobotWorker implements Worker and leaves eat() empty. Which principle does the fix target?",
+      "options": [
+        "ISP: split Worker into Workable and Eatable",
+        "DIP: inject a Worker",
+        "KISS: remove the interface",
+        "SoC: add a service layer"
+      ],
+      "correct": 0,
+      "explanation": "Interface Segregation: no class should be forced to implement methods it doesn't use."
+    }
+  ]
+}

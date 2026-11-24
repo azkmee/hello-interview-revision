@@ -1,0 +1,28 @@
+{
+  "id": "builder",
+  "topic": "Design Patterns",
+  "title": "Builder (creational)",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "Builds an object with many (often optional) parameters step by step.",
+    "A static nested Builder class has one method per parameter, each returning the builder, plus a final build(). A static builder() on the outer class is the entry point."
+  ],
+  "trade": "Fixes the telescoping constructor problem. The result can be immutable and build() is one place to validate. Fluent chain is fine under Law of Demeter. Overkill for 2-3 required params. Lombok @Builder generates it.",
+  "code": "HttpRequest req = HttpRequest.builder()\n    .url(\"https://api.x.com\")\n    .method(\"POST\")\n    .timeoutMs(5000)\n    .build();   // validates, returns immutable object\n\nstatic class Builder {\n    private String url;\n    private String method = \"GET\";\n    Builder url(String u) { this.url = u; return this; }\n    HttpRequest build() {\n        if (url == null) throw new IllegalStateException();\n        return new HttpRequest(this);\n    }\n}",
+  "test": "A class has 8 fields, 5 of them optional. Why is a builder better than overloaded constructors, and where should validation go?",
+  "answer": "Named, readable steps instead of guessing which argument is which, and no explosion of constructors. Validate once in build().",
+  "questions": [
+    {
+      "question": "A class has 8 fields, 5 optional, and callers can't tell which constructor argument is which. What helps most?",
+      "options": [
+        "Builder",
+        "Factory",
+        "Singleton",
+        "A static utility class"
+      ],
+      "correct": 0,
+      "explanation": "Builder: named steps, defaults for optional fields, and validation once in build()."
+    }
+  ]
+}

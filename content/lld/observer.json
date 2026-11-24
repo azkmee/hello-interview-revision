@@ -1,0 +1,29 @@
+{
+  "id": "observer",
+  "topic": "Design Patterns",
+  "title": "Observer (behavioral)",
+  "order": 7,
+  "added": "2026-11-24",
+  "points": [
+    "A subject keeps a list of observers and broadcasts when something happens, expecting nothing back.",
+    "The subject doesn't know what observers do or how many there are. Each observer decides how to react.",
+    "Answers: who needs to know that this happened?"
+  ],
+  "trade": "Loose coupling (SRP, OCP). Downsides: harder to trace the flow, one failing listener can break others, forgotten unsubscribes leak memory, ordering and sync vs async need a decision. Spring @EventListener is this pattern.",
+  "code": "interface OrderListener { void onOrderPlaced(Order o); }\n\nclass OrderService {\n    private final List<OrderListener> listeners = new ArrayList<>();\n    void subscribe(OrderListener l) { listeners.add(l); }\n    void place(Order o) {\n        save(o);\n        listeners.forEach(l -> l.onOrderPlaced(o));\n    }\n}",
+  "test": "OrderService.place(order) saves the order, then calls onOrderPlaced(order) on every subscribed OrderListener (for example EmailReceipt and InventoryUpdater). Why doesn't OrderService change when you add an SMS notification? Strategy vs Observer: which answers how and which answers who?",
+  "answer": "The SMS notifier is just another listener subscribed to the service. Strategy answers how to do something; Observer answers who needs to know it happened.",
+  "questions": [
+    {
+      "question": "OrderService must tell email, inventory and analytics code that an order was placed, without knowing what they do. Which pattern fits?",
+      "options": [
+        "Observer",
+        "State",
+        "Factory",
+        "Strategy"
+      ],
+      "correct": 0,
+      "explanation": "Observer: the subject broadcasts to subscribers and expects nothing back. Each observer decides how to react."
+    }
+  ]
+}

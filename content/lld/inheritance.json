@@ -1,0 +1,16 @@
+{
+  "id": "inheritance",
+  "topic": "OOP Pillars",
+  "title": "Inheritance",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "Shared methods or state go in a parent class that children reuse.",
+    "Every child must be able to honour what it inherits. That is LSP."
+  ],
+  "trade": "Tightest coupling in OOP: a parent change ripples into all children. Use it for true is-a; for has-a or code reuse prefer composition. Keep hierarchies shallow.",
+  "code": "abstract class Employee {\n    double annualPay() { return monthlyPay() * 12; }\n    abstract double monthlyPay();\n}\nclass FullTimer extends Employee {...}\nclass Contractor extends Employee {...}\n\n// Bad\nclass Bird { void fly() {...} }\nclass Penguin extends Bird { }   // inherits fly() it can't do",
+  "test": "Why does Penguin extends Bird with a fly() in Bird break the inheritance rule, and what are two ways to fix it?",
+  "answer": "Penguin inherits something it can't honour (LSP). Fix: move fly() into a FlyingBird subclass, or use composition (a Flyer capability or interface).",
+  "questions": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "yagni",
+  "topic": "Software Design Principles",
+  "title": "YAGNI (You Aren't Gonna Need It)",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "Don't build features or extension points for hypothetical future needs.",
+    "Build what is required now; refactor when the need is real."
+  ],
+  "trade": "YAGNI is not \"ignore good design\". Keep code clean and easy to change; just don't implement unneeded features.",
+  "code": "// Requirement: pay in SGD.\n// Don't add multi-currency conversion, a plugin system for\n// payment gateways, and a rates cache \"just in case\".",
+  "test": "How does YAGNI differ from KISS?",
+  "answer": "YAGNI is about scope: don't build unneeded features. KISS is about how you build what you do need: keep it simple.",
+  "questions": [
+    {
+      "question": "A requirement says \"pay in SGD\". A teammate adds multi-currency conversion and a plugin system for gateways. Which principle does this break?",
+      "options": [
+        "YAGNI",
+        "DRY",
+        "Law of Demeter",
+        "LSP"
+      ],
+      "correct": 0,
+      "explanation": "YAGNI: don't build features for hypothetical future needs. Add them when the need is real."
+    }
+  ]
+}

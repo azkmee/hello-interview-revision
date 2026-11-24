@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hello-interview-revision",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-11-01",
+  // Runs before every `wrangler dev` / `wrangler deploy` (and in Workers Builds):
+  // validates content/ and writes public/content.json. Bad content fails the deploy.
+  "build": { "command": "node scripts/build.mjs" },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hello_interview",
+      // Replace with the id printed by `npx wrangler d1 create hello_interview`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": { "enabled": true }
+}

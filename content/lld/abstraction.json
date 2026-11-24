@@ -1,0 +1,17 @@
+{
+  "id": "abstraction",
+  "topic": "OOP Pillars",
+  "title": "Abstraction",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "Expose what something does and hide how it does it.",
+    "Business logic defines the flow; variant-specific details (PayPal email, Stripe card token) stay inside implementations.",
+    "The contract is more than the signature: results, exceptions and side effects must be honoured too."
+  ],
+  "trade": "Closest to DIP and OCP. Encapsulation protects an object's own state; abstraction hides complexity behind a simple contract. An implementation that compiles but breaks the promised behaviour violates LSP.",
+  "code": "interface PaymentMethod { void pay(double amount); }\nclass PayPalPayment implements PaymentMethod { private final String email; public void pay(double a) {...} }\nclass StripePayment implements PaymentMethod { private final String cardToken; public void pay(double a) {...} }\n\nclass CheckoutService {\n    void checkout(PaymentMethod m, double total) { m.pay(total); }\n}",
+  "test": "CheckoutService.checkout(PaymentMethod m, double total) just calls m.pay(total), and PayPalPayment and StripePayment both implement PaymentMethod. Which SOLID principle makes CheckoutService depend on PaymentMethod rather than StripePayment, and how is that different from encapsulation? Also: an implementation's pay() compiles but silently does nothing when the card is declined. What part of the contract did it break?",
+  "answer": "DIP (and OCP): the service depends on the abstraction, so a new payment type is a new class. Encapsulation protects an object's own state; abstraction hides complexity behind a contract. The broken contract part: the promised behaviour, which is to charge exactly the amount or throw if it fails. A matching signature is not enough, and this is an LSP violation.",
+  "questions": []
+}

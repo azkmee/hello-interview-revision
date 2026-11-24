@@ -1,0 +1,28 @@
+{
+  "id": "lod",
+  "topic": "Software Design Principles",
+  "title": "Law of Demeter",
+  "order": 5,
+  "added": "2026-11-24",
+  "points": [
+    "A method should only talk to its immediate friends: itself, its fields, its parameters, objects it creates.",
+    "Avoid chains like a.getB().getC().doX()."
+  ],
+  "trade": "Fluent builders and stream pipelines are fine (same object or type returned). Overdoing it creates lots of pass-through wrapper methods.",
+  "code": "// Violation: caller knows Order -> Customer -> Address\nString city = order.getCustomer().getAddress().getCity();\n\n// Better: Order exposes what callers need\nString city = order.getShippingCity();",
+  "test": "Why does order.getCustomer().getAddress().getCity() make code brittle?",
+  "answer": "The caller depends on the internal structure of Order, Customer and Address. Any change to that structure breaks every caller.",
+  "questions": [
+    {
+      "question": "Which call chain most clearly violates the Law of Demeter?",
+      "options": [
+        "builder.name(\"a\").age(3).build()",
+        "list.stream().filter(f).map(g).toList()",
+        "order.getCustomer().getAddress().getCity()",
+        "order.getShippingCity()"
+      ],
+      "correct": 2,
+      "explanation": "The caller must know the Order to Customer to Address structure. Builders and streams return the same type, so they are fine."
+    }
+  ]
+}

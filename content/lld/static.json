@@ -1,0 +1,16 @@
+{
+  "id": "static",
+  "topic": "Abstract Class, Interface & static",
+  "title": "static (class-level members)",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "A static field or method belongs to the class, not to any object. One copy per class (per classloader) in the JVM, shared by all instances and subclasses.",
+    "Shared state only within the same JVM."
+  ],
+  "trade": "Shared mutable static state is global state: hard to test, not thread-safe unless synchronised, bypasses DIP. Separate app instances or Lambda containers each have their own copy. Static methods are hidden, not overridden, and can't be abstract. Fine for constants, pure helpers and factory methods.",
+  "code": "class Counter {\n    static int created = 0;   // one shared copy\n    int id;                   // one per object\n    Counter() { id = ++created; }\n}\nstatic final int MAX_RETRIES = 3;\nstatic boolean isValidEmail(String e) {...}",
+  "test": "Two Spring Boot instances run behind a load balancer and both increment a static int request counter. What does each one see, and why is this a problem?",
+  "answer": "Each sees only its own count, because static is per JVM. It is not shared state across servers; use a database or cache for that.",
+  "questions": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "singleton",
+  "topic": "Design Patterns",
+  "title": "Singleton (creational)",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "Exactly one instance of a class with a global access point.",
+    "Typical uses: config manager, connection pool, expensive clients such as AWS SDK clients (create once outside the Lambda handler)."
+  ],
+  "trade": "Same caveats as static: global state, hard to unit test, hides dependencies, breaks DIP. One per JVM, not cluster-wide. Mutable state must be thread-safe. Prefer a container-managed singleton (Spring bean) over a hand-written getInstance().",
+  "code": "class ConfigManager {\n    private static final ConfigManager INSTANCE = new ConfigManager();\n    private ConfigManager() {}\n    static ConfigManager getInstance() { return INSTANCE; }\n}\n\n// Spring: beans are singletons by default and injectable\n@Service class PricingService {...}\n\n// Lambda: one client per warm container\nprivate static final S3Client S3 = S3Client.create();",
+  "test": "Why is a hand-written getInstance() Singleton hard to unit test, and what is the usual fix in Spring? Is it one instance across all your servers?",
+  "answer": "Callers depend on the concrete class so you can't swap in a mock. In Spring let the container manage a singleton bean and inject it. No: it is one per JVM or container.",
+  "questions": [
+    {
+      "question": "Why is a hand-written getInstance() Singleton a problem for unit tests, and what does Spring offer instead?",
+      "options": [
+        "It is slow; use a thread pool",
+        "Callers depend on the concrete class so it can't be mocked; use a container-managed singleton bean and inject it",
+        "It is not thread-safe; use synchronized everywhere",
+        "It can only hold constants; use static final"
+      ],
+      "correct": 1,
+      "explanation": "Hidden global access breaks DIP. A Spring bean is still one instance but is injected, so tests can substitute a mock."
+    }
+  ]
+}

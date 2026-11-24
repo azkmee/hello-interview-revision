@@ -1,0 +1,28 @@
+{
+  "id": "dip",
+  "topic": "OO Design Principles (SOLID)",
+  "title": "DIP: Dependency Inversion",
+  "order": 5,
+  "added": "2026-11-24",
+  "points": [
+    "High-level modules should depend on abstractions, not concrete low-level modules.",
+    "Details (how to send, which params) live in the implementation, not the business logic."
+  ],
+  "trade": "DIP is the principle; dependency injection (Spring) is a technique to achieve it. It also makes unit testing easy: inject a mock sender.",
+  "code": "interface MessageSender { void send(String to, String message); }\nclass EmailSender implements MessageSender { /* SMTP config lives here */ }\nclass SmsSender implements MessageSender { /* gateway API key lives here */ }\n\nclass NotificationService {\n    private final MessageSender sender;\n    NotificationService(MessageSender sender) { this.sender = sender; }\n    void notifyUser(User u, String msg) { sender.send(u.contact(), msg); }\n}",
+  "test": "DIP vs Dependency Injection: what's the difference?",
+  "answer": "DIP is the design rule (depend on abstractions). DI is a technique that supplies the concrete dependency from outside, such as constructor injection.",
+  "questions": [
+    {
+      "question": "Which statement about DIP and dependency injection is correct?",
+      "options": [
+        "They are the same thing",
+        "DIP is a technique, DI is a principle",
+        "DIP is the principle; DI (like constructor injection) is a technique to achieve it",
+        "DI requires Spring; DIP does not"
+      ],
+      "correct": 2,
+      "explanation": "DIP says depend on abstractions. DI supplies the concrete implementation from outside, which also makes mocking easy in tests."
+    }
+  ]
+}

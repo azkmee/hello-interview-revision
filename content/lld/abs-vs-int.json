@@ -1,0 +1,29 @@
+{
+  "id": "abs-vs-int",
+  "topic": "Abstract Class, Interface & static",
+  "title": "Abstract class vs interface",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "Abstract class: related subclasses with a clear is-a relationship that share state (fields) or code. Single inheritance only.",
+    "Interface: a contract unrelated classes can implement (can-do capability). A class can implement many.",
+    "Rule of thumb: shared state or code plus is-a means abstract class. Only a contract or multiple capabilities means interface. Default to interface."
+  ],
+  "trade": "Since Java 8 interfaces can have default methods, but still no instance state. Interfaces can't have constructors; abstract classes can.",
+  "code": "abstract class Vehicle {\n    protected int fuelLevel;                         // shared state\n    void refuel(int amount) { fuelLevel += amount; } // shared code\n    abstract void move();                            // subclass-specific\n}\nclass Car extends Vehicle { void move() {...} }\nclass Boat extends Vehicle { void move() {...} }\n\ninterface Flyable { void fly(); }\nclass Sparrow implements Flyable { public void fly() {...} }\nclass Drone implements Flyable { public void fly() {...} }",
+  "test": "You have Car, Boat (share fuel logic) and Drone, Bird (both fly). Which uses an abstract class and which an interface?",
+  "answer": "Car and Boat: an abstract class (Vehicle) holding shared fuel state and code. Drone and Bird: an interface (Flyable), since they are unrelated and only share a capability.",
+  "questions": [
+    {
+      "question": "Car and Boat share fuel-level state and a refuel() method. Drone and Bird are unrelated but both fly. What fits?",
+      "options": [
+        "Interface for Car/Boat, abstract class for Drone/Bird",
+        "Abstract class for both pairs",
+        "Interface for both pairs",
+        "Abstract class for Car/Boat, interface for Drone/Bird"
+      ],
+      "correct": 3,
+      "explanation": "Shared state and code with an is-a relationship means an abstract class. A shared capability across unrelated types means an interface."
+    }
+  ]
+}

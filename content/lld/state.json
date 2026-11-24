@@ -1,0 +1,28 @@
+{
+  "id": "state",
+  "topic": "Design Patterns",
+  "title": "State (behavioral)",
+  "order": 8,
+  "added": "2026-11-24",
+  "points": [
+    "Each state of an object is its own class implementing a shared state interface: same methods, different logic and allowed transitions.",
+    "The object delegates to its current state and swaps it on a transition. A state machine without a giant if/else on a status field."
+  ],
+  "trade": "Makes invalid transitions explicit and new states a new class (OCP). One class per state, so for 2-3 simple states an enum and switch is simpler (KISS). Unlike strategies, states know about each other because they return the next state.",
+  "code": "interface OrderState { OrderState pay(); OrderState ship(); OrderState cancel(); }\nclass Created implements OrderState {\n    public OrderState pay()  { return new Paid(); }\n    public OrderState ship() { throw new IllegalStateException(\"pay first\"); }\n    ...\n}\nclass Order {\n    private OrderState state = new Created();\n    void pay() { state = state.pay(); }\n}",
+  "test": "Why is State better than an if (status == ...) chain once an order has 6 statuses? How does it differ from Strategy?",
+  "answer": "Each state owns its own rules and transitions, so there is no sprawling conditional and adding a state is a new class. Strategy is picked from outside and doesn't switch itself; State objects trigger the next state.",
+  "questions": [
+    {
+      "question": "An Order moves Created, Paid, Shipped, Cancelled, and each status allows different actions. Which pattern models this best?",
+      "options": [
+        "Builder",
+        "Singleton",
+        "Observer",
+        "State"
+      ],
+      "correct": 3,
+      "explanation": "State: each status is a class with the same methods but different logic and transitions, so no status if/else chain."
+    }
+  ]
+}

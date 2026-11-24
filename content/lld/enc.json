@@ -1,0 +1,17 @@
+{
+  "id": "enc",
+  "topic": "OOP Pillars",
+  "title": "Encapsulation",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "Keep fields private and let them change only through authorized methods.",
+    "The object controls its own state, so those methods can validate and protect invariants.",
+    "Returning a mutable internal collection lets callers bypass your rules. Return an unmodifiable view or a copy."
+  ],
+  "trade": "A getter and setter on every private field is not real encapsulation. Expose behaviour (withdraw), not raw state. View vs copy: a view is cheap but changes with the original; a copy is a stable snapshot. Both are shallow.",
+  "code": "class Account {\n    private double balance;\n    void withdraw(double amount) {\n        if (amount <= 0 || amount > balance) throw new IllegalArgumentException();\n        balance -= amount;\n    }\n}\n\nclass Order {\n    private final List<Item> items = new ArrayList<>();\n    List<Item> getItems() { return Collections.unmodifiableList(items); }\n}",
+  "test": "Why does a private final List field with a getItems() that returns it still break encapsulation?",
+  "answer": "Callers get the real list and can clear or modify it, bypassing your rules. Return an unmodifiable view or a copy, and change state only through methods that enforce the rules.",
+  "questions": []
+}

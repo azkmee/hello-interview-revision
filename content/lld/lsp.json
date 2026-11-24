@@ -1,0 +1,28 @@
+{
+  "id": "lsp",
+  "topic": "OO Design Principles (SOLID)",
+  "title": "LSP: Liskov Substitution",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "A subclass must be usable anywhere its parent is used without breaking behaviour.",
+    "A subclass should only inherit what it can actually do. If it throws or no-ops a parent method, the hierarchy is wrong."
+  ],
+  "trade": "A subclass shouldn't strengthen preconditions, weaken postconditions, or throw unexpected exceptions. Classic case: Square extends Rectangle.",
+  "code": "// Violation\nclass Bird { void fly() {...} }\nclass Penguin extends Bird { void fly() { throw new UnsupportedOperationException(); } }\n\n// Fix: model the capability separately\nclass Bird { void eat() {...} }\nclass FlyingBird extends Bird { void fly() {...} }\nclass Sparrow extends FlyingBird {}\nclass Penguin extends Bird {}",
+  "test": "How do you spot an LSP violation in code?",
+  "answer": "instanceof checks on subtypes, overrides that throw UnsupportedOperationException, or empty overrides that do nothing.",
+  "questions": [
+    {
+      "question": "Penguin extends Bird and overrides fly() to throw UnsupportedOperationException. Which principle is broken and what is the fix?",
+      "options": [
+        "SRP: split Bird into two classes",
+        "OCP: add a PenguinFlyPolicy",
+        "LSP: model flying as a separate capability, so Penguin doesn't inherit fly()",
+        "DIP: inject a Flyer into Bird"
+      ],
+      "correct": 2,
+      "explanation": "A subclass must work wherever its parent does. Move fly() to FlyingBird so Penguin only inherits what it can do."
+    }
+  ]
+}

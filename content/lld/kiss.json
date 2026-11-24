@@ -1,0 +1,16 @@
+{
+  "id": "kiss",
+  "topic": "Software Design Principles",
+  "title": "KISS (Keep It Simple, Stupid)",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "Prefer the simplest solution that works.",
+    "Complexity must be justified by a real requirement."
+  ],
+  "trade": "\"Simple\" means easy to understand and change, not necessarily fewest lines.",
+  "code": "// Over-engineered\ninterface ParityStrategy { boolean test(int n); }\nclass EvenStrategy implements ParityStrategy { public boolean test(int n) { return n % 2 == 0; } }\nclass ParityStrategyFactory { static ParityStrategy even() { return new EvenStrategy(); } }\n\n// KISS\nboolean isEven(int n) { return n % 2 == 0; }",
+  "test": "Your teammate added a Strategy + Factory to pick between two fixed behaviours. Which principle is violated and what would you do?",
+  "answer": "KISS. Replace the Strategy + Factory with a plain conditional or method until a real requirement needs more variants.",
+  "questions": []
+}

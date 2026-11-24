@@ -1,0 +1,15 @@
+{
+  "id": "srp",
+  "topic": "OO Design Principles (SOLID)",
+  "title": "SRP: Single Responsibility",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "A class should have one reason to change (one actor or responsibility)."
+  ],
+  "trade": "Over-splitting creates many tiny classes. Split by reason to change, not by method count.",
+  "code": "// Violation\nclass Invoice { double total() {...}  void print() {...}  void saveToDb() {...} }\n\n// SRP\nclass Invoice { double total() {...} }\nclass InvoicePrinter { void print(Invoice i) {...} }\nclass InvoiceRepository { void save(Invoice i) {...} }",
+  "test": "What are the \"reasons to change\" in class Invoice { double total() {...} void print() {...} void saveToDb() {...} }, and who asks for each change?",
+  "answer": "Calculation rules (finance), print format (design or customer-facing), and database persistence (engineering). Three reasons to change in one class, so split into Invoice, InvoicePrinter and InvoiceRepository.",
+  "questions": []
+}

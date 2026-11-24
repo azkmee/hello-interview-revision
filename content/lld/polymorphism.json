@@ -1,0 +1,16 @@
+{
+  "id": "polymorphism",
+  "topic": "OOP Pillars",
+  "title": "Polymorphism",
+  "order": 4,
+  "added": "2026-11-24",
+  "points": [
+    "The same method call behaves differently depending on the actual object type.",
+    "The caller uses the parent type or interface; the behaviour is picked at runtime (overriding, dynamic dispatch)."
+  ],
+  "trade": "Runtime polymorphism = overriding. Compile-time = overloading. A chain of instanceof or switch on type is the smell that polymorphism is missing.",
+  "code": "interface Shape { double area(); }\nclass Circle implements Shape {...}\nclass Square implements Shape {...}\n\nfor (Shape s : shapes) {\n    total += s.area();   // same call, different behaviour\n}",
+  "test": "CheckoutService.checkout(PaymentMethod m, double total) calls m.pay(total), where PaymentMethod is an interface implemented by StripePayment and PayPalPayment. How does polymorphism let you add a GrabPayPayment without changing CheckoutService?",
+  "answer": "The service calls pay() on the interface. A new payment type is a new class implementing it, and the right pay() runs at runtime.",
+  "questions": []
+}

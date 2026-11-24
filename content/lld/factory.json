@@ -1,0 +1,16 @@
+{
+  "id": "factory",
+  "topic": "Design Patterns",
+  "title": "Factory (creational)",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "A factory decides which concrete implementation to create and returns it as the shared interface type. Callers never write new on a concrete class.",
+    "The interface plus one class per variant is the abstraction; the factory is the extra piece that picks which variant to build."
+  ],
+  "trade": "The which-class decision lives in one place (DRY). Needs the shared interface (DIP). Adding a variant is a new class plus one line in the factory, so the factory itself is not perfectly OCP. Overkill with one implementation (KISS, YAGNI).",
+  "code": "interface Notifier { void send(String to, String msg); }\nclass EmailNotifier implements Notifier {...}\nclass PushNotifier implements Notifier {...}\n\nclass NotifierFactory {\n    static Notifier create(Channel c) {\n        return switch (c) {\n            case EMAIL -> new EmailNotifier();\n            case PUSH  -> new PushNotifier();\n        };\n    }\n}\nNotifier n = NotifierFactory.create(user.preferredChannel());",
+  "test": "A Notifier interface has EmailNotifier and PushNotifier implementations, and NotifierFactory.create(channel) returns the right one. Which part is the interface and implementations and which is the factory? What does the factory solve that the interface alone does not?",
+  "answer": "The interface and its classes are the contract and variants. The factory chooses which one to create, so callers don't use new on a concrete class and the choice lives in one place.",
+  "questions": []
+}

@@ -1,0 +1,40 @@
+{
+  "id": "strategy",
+  "topic": "Design Patterns",
+  "title": "Strategy (behavioral)",
+  "order": 6,
+  "added": "2026-11-24",
+  "points": [
+    "Put each variation of an algorithm in its own class behind a shared interface and inject the one to use.",
+    "Replaces if/else or switch chains with polymorphism. The caller calls the same method; the injected class decides how.",
+    "Answers: how should I do this thing?"
+  ],
+  "trade": "OCP in practice: new behaviour is a new class. Easy to test each alone. Not worth it for two fixed branches (KISS). Strategy vs State: a strategy is chosen from outside and doesn't change itself; states switch each other.",
+  "code": "interface PricingStrategy { double price(double base); }\nclass RegularPricing implements PricingStrategy {...}\nclass VipPricing implements PricingStrategy {...}\n\nclass Cart {\n    private final PricingStrategy pricing;   // injected\n    Cart(PricingStrategy p) { this.pricing = p; }\n    double total(double base) { return pricing.price(base); }\n}",
+  "test": "A method has an if/else chain on payment type. How do you refactor it with Strategy, and which SOLID principle does it satisfy?",
+  "answer": "One class per payment type behind a PaymentStrategy interface, injected into the caller. This satisfies OCP: a new type is a new class.",
+  "questions": [
+    {
+      "question": "A method has a long if/else on payment type, and you add a branch for each new type. Which pattern removes the chain?",
+      "options": [
+        "Singleton",
+        "Strategy",
+        "Builder",
+        "Observer"
+      ],
+      "correct": 1,
+      "explanation": "Strategy: one class per variant behind an interface, injected into the caller. A new type is a new class, which is OCP."
+    },
+    {
+      "question": "Strategy vs State: what is the key difference?",
+      "options": [
+        "Strategy is chosen from outside and doesn't change itself; State objects switch to the next state",
+        "State uses interfaces, Strategy uses abstract classes",
+        "Strategy is creational, State is structural",
+        "There is no difference"
+      ],
+      "correct": 0,
+      "explanation": "Both swap behaviour via an object. A strategy is injected and stays, while states represent a lifecycle and return the next state."
+    }
+  ]
+}

@@ -1,77 +1,58 @@
 # Handoff: Hello Interview Revision
 
-Status as of 2026-11-24. The code is written and parses; it has not been pushed, deployed or tested against a real MongoDB. This document says what the repo must contain, how the pieces connect, and what is still open.
+Status as of 2026-11-24. Steps 1–4 of the plan are done and tested locally (`wrangler dev` with local D1, driven in a browser). Nothing is deployed yet. Step 5, the daily Claude routine, is not started.
 
 ## Goal
-A revision app for Azmi's Hello Interview study (currently the Low Level Design chapter). It has three tabs: Study (concept cards), Revise (flashcards with Got it / Struggled) and Quiz (5 multiple-choice questions). Review stages, weak flags and the quiz log must persist across reloads and devices. The Mongo connection string must never reach the browser.
+A revision app for Azmi's Hello Interview study. Study shows concept cards and has a quick-note inbox. Revise is spaced-repetition flashcards. Quiz is multiple choice. Progress persists across devices. New learning goes in as rough notes, and a scheduled Claude Code run on the Claude subscription turns the notes into concepts and quizzes.
 
 ## Architecture
 ```
-Browser (GitHub Pages, static)
-   |  Authorization: Bearer APP_TOKEN
-   v
-/api/state  (Vercel serverless function, holds MONGODB_URI)
-   v
-MongoDB  (db: hello_interview, collection: state, one doc with _id "main")
+Browser ──same origin──> Cloudflare Worker ──> static assets (public/, content.json)
+                                 └── /api/* ──> D1: cards, quiz_log, notes
+
+Daily Claude Code routine (subscription) ──ROUTINE_TOKEN──> /api/state, /api/notes
+        └── writes content/*.json ──> git push ──> Workers Builds redeploys
 ```
-GitHub Pages is static, so the Mongo URL cannot live in the page. It exists only as an environment variable on the API host.
+- **Content is in git** (`content/`): concepts with their questions, plus optional dated quizzes. `scripts/build.mjs` validates the files and bundles them into `public/content.json`. Bad content fails the build, so it never reaches the site.
+- **State is in D1**, one row per card or log entry. A write never replaces the whole state.
+- The page keeps a localStorage cache and an **outbox**. Every write is queued and sent in order. If the API is unreachable, writes stay queued and retry when the browser is back online, when the tab regains focus, every 60s, and on the next page load.
+- Two tokens. `APP_TOKEN` (the browser) has full access. `ROUTINE_TOKEN` can only read state and notes and mark notes processed.
 
-## Repo name and visibility
-`azkmee/hello-interview-revision`, public (free GitHub Pages needs a public repo; contents are study notes only). Default branch `main`.
+See `README.md` for the file layout, concept format, API table and deploy commands.
 
-## Files that must be in the repo
-| Path | Purpose |
-|------|---------|
-| `public/index.html` | The whole app: CSS, concept data (`CONCEPTS`), quiz data (`QUESTIONS`), rendering, and sync code (`load`, `save`, `logQuiz`). Uses today's real date. Sync status and a "Set token" button sit in the header. |
-| `public/config.js` | Sets `window.APP_CONFIG = { apiBase: "" }`. The Pages workflow overwrites it at build time from the `API_BASE` repo variable. |
-| `api/state.js` | Vercel function. `GET` returns `{cards, log}`. `PUT` upserts `{cards, log}` into doc `_id: "main"`. Rejects requests without the bearer token (timing-safe compare), validates body shape, caps body at 200,000 chars. CORS origin from `ALLOWED_ORIGIN`. |
-| `package.json` | Single dependency: `mongodb` ^6.8.0. |
-| `.github/workflows/pages.yml` | On push to `main`: writes `public/config.js` from `vars.API_BASE`, then deploys `public/` to GitHub Pages. |
-| `.gitignore` | `node_modules`, `.env`, `.vercel`. |
-| `README.md` | Short setup summary. |
-| `HANDOFF.md` | This file. |
-
-The full set is in `hello-interview-revision.zip` (sent to the user in the Claude session). Unzip it and push the contents of the inner `hi-revision/` folder as the repo root.
-
-## Data model
-One Mongo document:
-```json
-{ "_id": "main",
-  "cards": { "<conceptId>": { "stage": 0, "next": "YYYY-MM-DD", "status": "new|ok|weak", "learned": "YYYY-MM-DD" } },
-  "log":   [ { "date": "YYYY-MM-DD", "score": 4, "n": 5, "topics": ["..."], "weak": ["..."] } ],
-  "updatedAt": "<Date>" }
-```
-Concept ids (`enc`, `abstraction`, `srp`, `factory`, ...) are defined in `CONCEPTS` in `index.html`. The browser merges saved cards onto the defaults, so adding a concept later does not break saved state. Writes are last-write-wins on the whole document (single user).
-
-Review intervals: +1, +3, +7, +14, +30 days. "Got it" moves to the next stage. "Struggled" resets to stage 0, next review +1 day, status weak.
-
-## Environment variables
-On the API host (Vercel):
-- `MONGODB_URI` (required): Atlas connection string. Never commit it.
-- `APP_TOKEN` (required): long random string. Without it the API rejects every request.
-- `MONGODB_DB` (optional): defaults to `hello_interview`.
-- `ALLOWED_ORIGIN` (optional): the Pages origin, e.g. `https://azkmee.github.io`. Defaults to `*`.
-
-On GitHub (repo Settings > Secrets and variables > Actions > Variables):
-- `API_BASE`: the deployed API origin, no trailing slash.
+## Changes from the first version
+- Replaced Vercel + MongoDB + GitHub Pages with one Cloudflare Worker + D1. Removed `api/state.js`, `public/config.js` and `.github/workflows/pages.yml`.
+- Concepts and questions moved out of `index.html` into `content/lld/*.json`. Each question belongs to a concept.
+- Review fixes:
+  - A normal Revise round holds only due cards, weak ones first. "Practice anyway" shows every card and doesn't change the schedule.
+  - The rating buttons are disabled until the first load attempt finishes.
+  - "Today" is the device's local date, not UTC.
+  - A wrong quiz answer marks that concept weak (stage 0, due tomorrow).
+  - The quiz prefers weak concepts, then due ones, with at most one question per concept.
+- The quiz log is append-only and idempotent: the browser generates each row's id, so retries don't duplicate rows.
+- Added a Quick note box (Study tab) → `notes` table.
+- CI (`.github/workflows/validate.yml`) runs the content check and `node --check` on every push and PR.
 
 ## Steps to finish
-1. Create the public repo and push the files above to `main`.
-2. Repo Settings > Pages > Source: GitHub Actions.
-3. Import the repo into Vercel. Set `MONGODB_URI`, `APP_TOKEN` and `ALLOWED_ORIGIN`. Deploy. In Atlas, allow Vercel's IPs (or 0.0.0.0/0 with a strong password).
-4. Add the repo variable `API_BASE`, then re-run the Pages workflow (Actions tab > Deploy to GitHub Pages > Run workflow).
-5. Open the Pages site, click "Set token", paste `APP_TOKEN`. The header should read "Synced".
-6. Test: rate a concept in Revise, reload the page, confirm the stage persisted. Finish a quiz and confirm a row appears in the quiz log after reload.
+1. Push to `azkmee/hello-interview-revision` (remote already set).
+2. Deploy: follow "Deploy (once)" in `README.md`. That covers the D1 database, the migration, the two secrets and `npm run deploy`. Put the real `database_id` into `wrangler.jsonc` and commit it.
+3. In the Cloudflare dashboard, connect the GitHub repo so pushes to `main` deploy.
+4. Open the Worker URL, click "Set token", and paste `APP_TOKEN`. Rate a card, reload, and confirm it persisted. Repeat on your phone.
+5. Daily routine (not started): see below.
 
-## Why this is not finished
-- The GitHub login in the Claude session was invalid, and the GitHub connector could not create repositories (403 "Resource not accessible by integration"). Either create the empty repo by hand and give the connector Contents write access to it, or widen the connector's permission.
-- The connector has no tools for enabling Pages or setting repo variables, so steps 2 and 4 are manual.
-- Nothing can be deployed to Vercel from the Claude session, so steps 3 and 5 are manual.
+## Step 5: the daily routine
+This has to run as Claude Code, either as a scheduled cloud routine via `/schedule` or as a local `claude -p` cron. A Worker can't use the subscription. The routine needs GitHub access to the repo, which was failing in this session (GitHub connector error: "Authorization header is badly formatted"). Fix that first. The routine also needs the Worker URL and `ROUTINE_TOKEN` as environment variables.
 
-## Known gaps and next ideas
-- Concept and quiz content is hard-coded in `index.html`. The source of truth is still the Claude Project "Hello Interview" (`claude/chapters/*.md`). New concepts need a rebuild of `CONCEPTS`.
-- Only the Low Level Design chapter exists. Multi-chapter support means adding a `chapter` field to each concept and a chapter filter in the UI.
-- The scheduled quiz task (every other day, 7:17pm Singapore time) currently reads and writes the Project files and republishes the old Claude artifact. To make Mongo the shared state, it would need to call `GET`/`PUT /api/state` with the token, or the chapter files would need to be generated from Mongo.
-- The old Claude artifact "Hello Interview Revision" keeps no state; it can be retired once the Pages site works.
-- Last-write-wins sync means two devices open at once can overwrite each other. Fine for one user; add per-card timestamps if that becomes a problem.
-- No automated tests. `api/state.js` passes `node --check`; the page script parses.
+Each run:
+1. `GET /api/notes`. Turn each note into a new concept file (`content/<chapter>/<id>.json`, `added` = today, 1–3 questions) or merge it into an existing one. Then call `POST /api/notes/:id/processed` with `{concept}`.
+2. `GET /api/state`. Write `content/quizzes/<today>.json` with about 5 new questions aimed at weak and due concepts and recent misses (`log[].weak` holds concept ids).
+3. Run `node scripts/build.mjs`. It must pass before committing.
+4. Push the quiz files to `main`. Open a PR for new or changed concepts so you can review them.
+
+Retire the old every-other-day 7:17pm quiz task and the old "Hello Interview Revision" Claude artifact once this runs.
+
+## Known gaps
+- Two devices that rate the same card while offline: the last write wins for that card. That's acceptable for one user.
+- `added` for the existing 24 concepts is set to 2026-11-24. The original learn dates weren't recorded.
+- Old generated quiz files pile up in `content/quizzes/`. Prune them occasionally, or have the routine delete files older than 14 days.
+- There are no automated tests beyond the content validator. The API and page were tested by hand against local D1.

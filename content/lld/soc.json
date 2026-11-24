@@ -1,0 +1,28 @@
+{
+  "id": "soc",
+  "topic": "Software Design Principles",
+  "title": "Separation of Concerns (SoC)",
+  "order": 4,
+  "added": "2026-11-24",
+  "points": [
+    "Split a system into parts, each handling a distinct concern: presentation, business logic, data access.",
+    "Changes in one concern don't ripple into others."
+  ],
+  "trade": "SoC works at many levels (layers, modules, classes, methods). SRP is the class-level version of it.",
+  "code": "@RestController class OrderController { /* HTTP only: parse request, return response */ }\n@Service class OrderService { /* business rules: pricing, validation */ }\n@Repository class OrderRepository { /* persistence only */ }\n// Anti-example: a controller that runs SQL and calculates tax.",
+  "test": "Name the three concerns in a typical Spring Boot endpoint and where each lives.",
+  "answer": "HTTP handling in the controller, business rules in the service, persistence in the repository.",
+  "questions": [
+    {
+      "question": "In a Spring Boot app, a controller runs SQL and calculates tax. Which principle does this violate?",
+      "options": [
+        "Separation of Concerns",
+        "YAGNI",
+        "Law of Demeter",
+        "Open/Closed"
+      ],
+      "correct": 0,
+      "explanation": "HTTP handling, business rules and persistence are separate concerns. Put them in the controller, service and repository."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "lld",
+  "title": "Low Level Design",
+  "topics": [
+    "OOP Pillars",
+    "Software Design Principles",
+    "OO Design Principles (SOLID)",
+    "Abstract Class, Interface & static",
+    "Design Patterns"
+  ]
+}
