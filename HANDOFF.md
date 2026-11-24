@@ -1,6 +1,6 @@
 # Handoff: Hello Interview Revision
 
-Status as of 2026-11-24. Steps 1–4 of the plan are done and tested locally (`wrangler dev` with local D1, driven in a browser). Nothing is deployed yet. Step 5, the daily Claude routine, is not started.
+Status as of 2026-11-24. Deployed and live at https://hello-interview-revision.hello-interview-revision.workers.dev (D1 `hello_interview`, APAC). Secrets `APP_TOKEN` and `ROUTINE_TOKEN` are set on the Worker; copies are in the gitignored `.env`. Workers Builds is connected, so pushes to `main` deploy. Lessons are added with the `/add-lesson` skill (`.claude/skills/add-lesson/`). Step 5, the daily Claude routine, is not started.
 
 ## Goal
 A revision app for Azmi's Hello Interview study. Study shows concept cards and has a quick-note inbox. Revise is spaced-repetition flashcards. Quiz is multiple choice. Progress persists across devices. New learning goes in as rough notes, and a scheduled Claude Code run on the Claude subscription turns the notes into concepts and quizzes.
@@ -34,14 +34,14 @@ See `README.md` for the file layout, concept format, API table and deploy comman
 - CI (`.github/workflows/validate.yml`) runs the content check and `node --check` on every push and PR.
 
 ## Steps to finish
-1. Push to `azkmee/hello-interview-revision` (remote already set).
-2. Deploy: follow "Deploy (once)" in `README.md`. That covers the D1 database, the migration, the two secrets and `npm run deploy`. Put the real `database_id` into `wrangler.jsonc` and commit it.
-3. In the Cloudflare dashboard, connect the GitHub repo so pushes to `main` deploy.
+1. ~~Push to GitHub.~~ Done.
+2. ~~Deploy: D1, migration, secrets, `wrangler deploy`.~~ Done.
+3. ~~Connect Workers Builds.~~ Done.
 4. Open the Worker URL, click "Set token", and paste `APP_TOKEN`. Rate a card, reload, and confirm it persisted. Repeat on your phone.
-5. Daily routine (not started): see below.
+5. Daily routine (not started): see below. GitHub is linked to claude.ai via `/web-setup`.
 
 ## Step 5: the daily routine
-This has to run as Claude Code, either as a scheduled cloud routine via `/schedule` or as a local `claude -p` cron. A Worker can't use the subscription. The routine needs GitHub access to the repo, which was failing in this session (GitHub connector error: "Authorization header is badly formatted"). Fix that first. The routine also needs the Worker URL and `ROUTINE_TOKEN` as environment variables.
+This has to run as Claude Code, either as a scheduled cloud routine via `/schedule` or as a local `claude -p` cron. A Worker can't use the subscription. The routine needs the Worker URL and `ROUTINE_TOKEN` as environment variables.
 
 Each run:
 1. `GET /api/notes`. Turn each note into a new concept file (`content/<chapter>/<id>.json`, `added` = today, 1–3 questions) or merge it into an existing one. Then call `POST /api/notes/:id/processed` with `{concept}`.
