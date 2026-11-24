@@ -1,0 +1,63 @@
+{
+  "id": "wait-notify",
+  "topic": "Coordination",
+  "title": "wait() / notify()",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "wait() must be called while holding the object's lock; it releases that lock and puts the thread to sleep as one atomic step.",
+    "Atomic release-and-sleep prevents a lost wakeup: no other thread can slip in and call notify() in the gap between 'unlock' and 'sleep'.",
+    "When notified, the thread wakes but must reacquire the lock before it continues, so it resumes only when the notifier has left the synchronized block.",
+    "A thread that wakes up from wait() must check the condition again, so call wait() in a while loop, not an if: the condition may no longer hold because another thread got in first, or the wakeup may be spurious."
+  ],
+  "trade": "wait/notify is the low-level building block that blocking queues use internally. Prefer a BlockingQueue or a Condition from java.util.concurrent in new code. Versus Thread.sleep(): sleep does NOT release any lock it holds and wakes on a timer, whereas wait() releases the lock and wakes on notify (or timeout). Versus busy-waiting: wait() sleeps without burning CPU.",
+  "code": "Consumer thread                         Producer thread\n\nsynchronized(lock) {   // acquire\n  while (queue.isEmpty())\n    lock.wait();  --- releases lock + sleeps (atomic)\n                                        synchronized(lock) {  // can now enter\n                                          queue.add(x);\n                                          lock.notify();      // wake consumer\n                                        }   // lock released\n  // wakes, REACQUIRES lock\n  x = queue.remove();\n}\n\n// the loop matters\nsynchronized (lock) {\n    while (queue.isEmpty()) lock.wait();   // not 'if'\n    return queue.remove();\n}\n\n// why 'if' is a bug: two consumers, one item\n// C1 waits, C2 waits. Producer adds 1 item, notifyAll().\n// C1 wakes, reacquires lock, removes the item.\n// C2 wakes, reacquires lock, queue is EMPTY again.\n//   with if:    C2 calls remove() on an empty queue -> error\n//   with while: C2 re-checks isEmpty() and waits again",
+  "test": "Why must wait() release the lock, and why must it do that atomically with going to sleep? What breaks if it were two separate steps?",
+  "answer": "It must release the lock or the producer could never enter the synchronized block to notify. If release and sleep were separate, the producer could notify in the gap, the signal would be lost, and the consumer would then sleep forever.",
+  "questions": [
+    {
+      "question": "What does wait() do with the lock when the thread goes to sleep?",
+      "options": [
+        "Keeps holding it so nobody else can change state",
+        "Releases it and sleeps as one atomic step",
+        "Releases it a moment after the thread sleeps",
+        "Hands it to the notifying thread"
+      ],
+      "correct": 1,
+      "explanation": "Atomic release-and-sleep avoids a lost wakeup. Keeping the lock would stop the notifier from ever entering."
+    },
+    {
+      "question": "Thread.sleep() vs Object.wait(): which statement is correct?",
+      "options": [
+        "Both release the lock",
+        "sleep() keeps any lock it holds, while wait() releases the lock",
+        "wait() keeps the lock, sleep() releases it",
+        "Neither can hold a lock"
+      ],
+      "correct": 1,
+      "explanation": "Sleep is just a timed pause and holds its locks. wait() gives up the monitor so others can change the condition."
+    },
+    {
+      "question": "Why is wait() called inside a while loop rather than an if?",
+      "options": [
+        "To speed up wakeup",
+        "The condition may be false again after waking (spurious wakeup or another thread consumed it), so it must be re-checked",
+        "Because notify() wakes every thread",
+        "wait() returns immediately otherwise"
+      ],
+      "correct": 1,
+      "explanation": "Waking up does not guarantee the condition holds. The loop re-checks it after reacquiring the lock."
+    },
+    {
+      "question": "Two consumers wait on an empty queue and the producer adds one item and calls notifyAll(). Consumer 2 wakes after consumer 1 already took the item. What stops consumer 2 from failing?",
+      "options": [
+        "notifyAll() only wakes one consumer",
+        "It re-checks the condition in a while loop and waits again",
+        "wait() returns only when the item is there",
+        "The producer holds the lock until consumer 2 is done"
+      ],
+      "correct": 1,
+      "explanation": "Waking does not guarantee the condition still holds. With an if, consumer 2 would proceed on an empty queue; the loop sends it back to wait."
+    }
+  ]
+}

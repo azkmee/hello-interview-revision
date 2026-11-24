@@ -1,0 +1,75 @@
+{
+  "id": "blocking-queue",
+  "topic": "Coordination",
+  "title": "Blocking queue (producer-consumer)",
+  "order": 2,
+  "added": "2026-11-24",
+  "points": [
+    "Coordination is about how threads communicate and hand work off to each other, as opposed to protecting shared state.",
+    "A blocking queue is a thread-safe queue where producers put work in and consumers take it out.",
+    "put() blocks when a bounded queue is full and take() blocks when it is empty, so the queue handles waiting for you without wait/notify.",
+    "It solves the producer-consumer problem and gives back-pressure: a fast producer is slowed down when consumers can't keep up.",
+    "When a producer adds to a full bounded queue there are three choices: put(e) blocks until space frees up, offer(e) returns false immediately, and offer(e, timeout, unit) waits up to the timeout and then returns false."
+  ],
+  "trade": "Use it when one side generates work and another processes it at a different speed (request handlers and a worker pool, log writer, job queue). Prefer a bounded queue so memory can't grow without limit. Versus an actor: a blocking queue is a shared queue that many consumers pull from, while an actor owns private state behind its own single mailbox. Versus locks: you hand the data over instead of sharing it. Choosing the put variant: put() when the producer should simply slow down (back-pressure) and can safely wait; offer(e) when it must never block and can drop, retry later or reject the request (load shedding); offer with timeout when it can wait a bounded time, then fail or fall back so a stuck consumer can't hang the producer forever. Consumers have the same trio: take(), poll(), poll(timeout, unit).",
+  "code": "Producers                Bounded queue              Consumers\n\n  P1 --put()--+                                +--take()-- C1\n              +--->  [ job | job | job | _ ] --+\n  P2 --put()--+        full  -> put() blocks     +--take()-- C2\n                       empty -> take() blocks\n\nBlockingQueue<Job> q = new ArrayBlockingQueue<>(100);\n\n// producer\nq.put(job);                 // waits if full\n\n// consumer\nwhile (true) {\n    Job j = q.take();       // waits if empty\n    process(j);\n}\n\n// Producer adding to a FULL queue\nq.put(job);                          // blocks until space (maybe forever)\nboolean ok = q.offer(job);           // returns false at once, never blocks\nboolean ok = q.offer(job, 2, TimeUnit.SECONDS);\n                                     // waits up to 2s, then false\n\nif (!ok) { reject(job); }            // e.g. HTTP 503 / drop / retry\n\n            queue full\n   put()  ----------------> wait ..... until space   (may hang)\n   offer() ---------------> false immediately\n   offer(t) --------------> wait <= t ---> space? true : false",
+  "test": "A fast API thread produces report jobs and a slow worker generates them. Without limits memory grows until the app crashes. What do you use, and when would you pick put(), offer() or offer with a timeout?",
+  "answer": "A bounded blocking queue. put() blocks the producer (back-pressure) when full, offer() returns false at once so you can reject or drop, and offer with a timeout waits a bounded time then returns false.",
+  "questions": [
+    {
+      "question": "What happens when a producer calls put() on a full bounded blocking queue?",
+      "options": [
+        "The oldest item is dropped",
+        "It throws immediately",
+        "It blocks until a consumer makes space",
+        "The queue grows"
+      ],
+      "correct": 2,
+      "explanation": "put() waits, which is how back-pressure works. Dropping or growing are separate policies (offer, unbounded queues)."
+    },
+    {
+      "question": "Which problem does a blocking queue solve most directly?",
+      "options": [
+        "Protecting a single counter",
+        "Producer-consumer hand-off between threads running at different speeds",
+        "Preventing deadlock between two locks",
+        "Many players each holding private state"
+      ],
+      "correct": 1,
+      "explanation": "It coordinates hand-off and waiting. A counter wants an atomic, and per-entity private state suits actors."
+    },
+    {
+      "question": "Why prefer a bounded queue over an unbounded one?",
+      "options": [
+        "It is faster to enqueue",
+        "It limits memory and slows producers when consumers lag",
+        "It guarantees ordering",
+        "It avoids needing consumers"
+      ],
+      "correct": 1,
+      "explanation": "Unbounded queues hide overload until memory runs out. A bound turns overload into back-pressure."
+    },
+    {
+      "question": "A request thread adds jobs to a full bounded queue and must respond quickly, returning 503 if the system is overloaded. Which call fits?",
+      "options": [
+        "put(job), blocking until there is space",
+        "offer(job), returning false immediately so it can reject the request",
+        "take(job)",
+        "Replace the queue with an unbounded one"
+      ],
+      "correct": 1,
+      "explanation": "offer() never blocks, so the caller can shed load at once. put() could hang the request thread while consumers are slow."
+    },
+    {
+      "question": "How does offer(e, 2, SECONDS) differ from put(e) on a full queue?",
+      "options": [
+        "It drops the oldest element",
+        "It waits at most 2 seconds and then returns false instead of waiting indefinitely",
+        "It grows the queue after 2 seconds",
+        "It returns false immediately"
+      ],
+      "correct": 1,
+      "explanation": "The timeout bounds the wait, so a stalled consumer cannot block the producer forever. put() has no bound; offer(e) has zero wait."
+    }
+  ]
+}

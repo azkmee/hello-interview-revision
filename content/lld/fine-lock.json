@@ -1,0 +1,40 @@
+{
+  "id": "fine-lock",
+  "topic": "Concurrency",
+  "title": "Fine-grained lock",
+  "order": 4,
+  "added": "2026-11-24",
+  "points": [
+    "Use a separate lock per resource (per seat, per account) so threads working on different resources run in parallel.",
+    "It gives higher throughput than a coarse lock when you can partition by resource.",
+    "The cost is overhead and complexity, and the risk of deadlock when one operation needs several locks."
+  ],
+  "trade": "Use it when contention matters and state can be partitioned by resource. Versus coarse: more throughput, more bugs. Avoid deadlock by always acquiring locks in a consistent global order (e.g. by id).",
+  "code": "void transfer(Account a, Account b, long amt) {\n    Account first = a.id < b.id ? a : b;   // fixed order\n    Account second = first == a ? b : a;\n    synchronized (first) {\n        synchronized (second) {\n            a.balance -= amt; b.balance += amt;\n        }\n    }\n}",
+  "test": "Transfers between accounts each lock both accounts. Thread 1 does A to B and thread 2 does B to A and the app hangs. What happened and how do you prevent it?",
+  "answer": "Deadlock: each holds one lock and waits for the other. Always acquire the locks in the same order, such as by account id.",
+  "questions": [
+    {
+      "question": "Which risk is specific to fine-grained locking compared with a coarse lock?",
+      "options": [
+        "Lower throughput",
+        "Deadlock from acquiring several locks in different orders",
+        "Lost updates on a single counter",
+        "Stale reads"
+      ],
+      "correct": 1,
+      "explanation": "Multiple locks can be held in conflicting orders. Lower throughput is the coarse-lock problem."
+    },
+    {
+      "question": "When does a fine-grained lock pay off?",
+      "options": [
+        "Low traffic and a single shared structure",
+        "When state can be partitioned by resource and contention is a concern",
+        "When protecting one integer",
+        "When most operations are reads"
+      ],
+      "correct": 1,
+      "explanation": "It needs per-resource partitioning to help. One integer suits an atomic; read-heavy suits a read-write lock."
+    }
+  ]
+}

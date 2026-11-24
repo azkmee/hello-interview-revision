@@ -1,0 +1,41 @@
+{
+  "id": "thread-confinement",
+  "topic": "Concurrency",
+  "title": "Thread confinement",
+  "order": 7,
+  "added": "2026-11-24",
+  "points": [
+    "Thread confinement partitions the data so each piece is owned and touched by only one thread, so no lock is needed on it.",
+    "Typical form: route work by key (e.g. hash of seat or account id) to a dedicated single-threaded worker or queue.",
+    "It suits machine-triggered, high-throughput load where lock contention is the concern.",
+    "It only works if you can partition by thread; work that spans partitions needs coordination."
+  ],
+  "trade": "Use when contention is high and data partitions cleanly by key. Versus fine-grained locks: no lock overhead or deadlock, but you need routing and cross-partition operations are hard. Same idea as one-thread-per-shard designs (e.g. a single-threaded event loop).",
+  "code": "ExecutorService[] workers = new ExecutorService[N];  // each single-threaded\nvoid submit(String seatId, Runnable task) {\n    int i = Math.floorMod(seatId.hashCode(), N);\n    workers[i].submit(task);   // same seat always same thread\n}",
+  "test": "A machine-driven stream of millions of booking events per second hits seats that can be keyed by id. Locks are a bottleneck. What do you do?",
+  "answer": "Thread confinement: hash each seat id to a dedicated single-threaded worker so one thread owns each seat and no lock is needed.",
+  "questions": [
+    {
+      "question": "How does thread confinement avoid locks?",
+      "options": [
+        "It uses CAS on every field",
+        "Each partition of data is only ever accessed by one thread",
+        "It makes all fields volatile",
+        "It copies data on every read"
+      ],
+      "correct": 1,
+      "explanation": "If a single thread owns the data, nothing races on it."
+    },
+    {
+      "question": "When is thread confinement the best fit?",
+      "options": [
+        "Human-triggered, moderate load",
+        "A single counter",
+        "High-throughput machine-triggered load that can be partitioned by key",
+        "Read-mostly shared config"
+      ],
+      "correct": 2,
+      "explanation": "It targets contention at scale and requires a clean partition. A counter wants an atomic, read-mostly data a read-write lock."
+    }
+  ]
+}

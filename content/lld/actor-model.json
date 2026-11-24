@@ -1,0 +1,63 @@
+{
+  "id": "actor-model",
+  "topic": "Coordination",
+  "title": "Actor model",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "An actor is an object that owns private state and a mailbox, and it only changes its state by processing one message at a time.",
+    "Other code never touches the state directly; it sends an asynchronous message to the actor's mailbox.",
+    "Because one actor handles one message at a time, its state needs no locks.",
+    "It fits many independent stateful entities, such as each player in a game server, each chat room, or each bank account being its own actor."
+  ],
+  "trade": "Actors are thread confinement plus messaging: the confined state is addressable by messages and many actors are multiplexed onto few threads. Use when you have lots of small stateful engines with little shared data. Not good when an operation needs several actors to change atomically (needs a protocol such as a saga), when you need an immediate return value (replies are async), or when a single hot actor becomes the bottleneck. Versus blocking queue: a queue is shared and pulled from by many consumers; an actor has its own private mailbox and state.",
+  "code": "Game server: one actor per player\n\n Client A --\"Move(3,4)\"--+                +-----------------------+\n Client B --\"Hit(dmg 10)\"-+--> mailbox --> | PlayerActor(id=7)     |\n Timer ----\"Tick\"---------+   [m1|m2|m3]   |  hp = 100             |\n                                           |  pos = (0,0)          |\n   one message at a time, in order  ------>|  receive(msg):        |\n                                           |    Hit  -> hp -= dmg  |\n                                           |    Move -> pos = ...  |\n                                           +-----------+-----------+\n                                                       | reply / send\n                                                       v\n                                            other actors (Room, Score)\n\n// minimal Java actor: private state + single-threaded mailbox\nclass PlayerActor {\n    private int hp = 100;                         // never shared\n    private final ExecutorService mailbox =\n        Executors.newSingleThreadExecutor();      // one msg at a time\n\n    void hit(int dmg)  { mailbox.submit(() -> hp -= dmg); }\n    Future<Integer> getHp() { return mailbox.submit(() -> hp); }\n}\n\n// many actors: Map<PlayerId, PlayerActor> players;\n// players.get(7).hit(10);   // async send, no locks",
+  "test": "A game server has 50,000 players, each with hp, position and inventory, and messages arrive from many threads. How do actors keep one player's state consistent without locks, and what operation would be awkward?",
+  "answer": "Each player is an actor: all messages for that player go through its mailbox and are handled one at a time, so its state is only touched by one thread. Atomically changing two players (e.g. trade items) is awkward because it spans two actors and needs a message protocol.",
+  "questions": [
+    {
+      "question": "Why does an actor not need locks on its own state?",
+      "options": [
+        "Its fields are volatile",
+        "It processes one message at a time and nobody else touches its state",
+        "It uses compare-and-set internally",
+        "It copies state on every message"
+      ],
+      "correct": 1,
+      "explanation": "Confinement through the mailbox: only the actor handles its state, one message at a time."
+    },
+    {
+      "question": "A game server has thousands of players, each with their own hp and position. Which model fits best?",
+      "options": [
+        "One coarse lock over all players",
+        "An AtomicInteger for each field",
+        "One actor per player",
+        "A single blocking queue consumed by all threads against shared player objects"
+      ],
+      "correct": 2,
+      "explanation": "Many independent stateful entities is the actor use case. A shared queue still leaves shared mutable player objects to protect."
+    },
+    {
+      "question": "What is hard to do with actors?",
+      "options": [
+        "Isolate state for each entity",
+        "Atomically update the state of two actors, such as trading items between two players",
+        "Process messages in order for one entity",
+        "Scale to many entities"
+      ],
+      "correct": 1,
+      "explanation": "Each actor commits independently, so cross-actor atomicity needs a protocol such as a saga or one actor coordinating both."
+    },
+    {
+      "question": "How do actors differ from a blocking queue with a worker pool?",
+      "options": [
+        "Actors have no queue",
+        "An actor owns private state behind its own mailbox, whereas pool workers pull from one shared queue",
+        "Actors are synchronous",
+        "Blocking queues cannot be bounded"
+      ],
+      "correct": 1,
+      "explanation": "Both use queues. The actor's mailbox is private and tied to its state; a pool queue is shared and any worker can take any job."
+    }
+  ]
+}

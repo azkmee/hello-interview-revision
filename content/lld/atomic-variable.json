@@ -1,0 +1,52 @@
+{
+  "id": "atomic-variable",
+  "topic": "Concurrency",
+  "title": "Atomic variable (CAS)",
+  "order": 6,
+  "added": "2026-11-24",
+  "points": [
+    "An atomic variable (AtomicInteger, AtomicLong) updates a single value without a lock by using a hardware compare-and-set (CAS) instruction.",
+    "CAS means: set the value to new only if it is still the expected old value; if another thread changed it, the CAS fails and the code retries.",
+    "It is lock-free, so there is no blocking or deadlock, but it only protects one variable.",
+    "It cannot protect an invariant across several variables, such as checking and booking a seat."
+  ],
+  "trade": "Use for counters, flags and sequence ids. Versus locks: faster under low-to-moderate contention, no deadlock, but single variable only. Under heavy contention retries spin and waste CPU. For multi-variable invariants use a lock.",
+  "code": "AtomicInteger hits = new AtomicInteger();\nhits.incrementAndGet();\n\n// what it does internally\nint old, next;\ndo {\n    old = hits.get();\n    next = old + 1;\n} while (!hits.compareAndSet(old, next));",
+  "test": "Why can an AtomicBoolean not safely solve the seat-booking problem when a booking updates the seat owner and the available-seat count?",
+  "answer": "Atomics make one variable atomic. Booking changes two pieces of state that must stay consistent, so you need a lock around both.",
+  "questions": [
+    {
+      "question": "What does compareAndSet(expected, new) do?",
+      "options": [
+        "Locks the variable and sets it",
+        "Sets the value only if it still equals expected, otherwise fails so the caller can retry",
+        "Always sets the value and returns the old one",
+        "Waits until the value equals expected"
+      ],
+      "correct": 1,
+      "explanation": "CAS is a single hardware step: compare and swap if unchanged. It does not block; the caller retries on failure."
+    },
+    {
+      "question": "Which is the right tool for a request counter shared by many threads?",
+      "options": [
+        "Coarse-grained lock",
+        "Read-write lock",
+        "AtomicLong",
+        "Thread confinement"
+      ],
+      "correct": 2,
+      "explanation": "A single variable is the textbook atomic case. A lock works but costs more."
+    },
+    {
+      "question": "Why are atomics a poor fit for 'if seat free then mark taken and decrement available'?",
+      "options": [
+        "They are too slow",
+        "They are not thread-safe",
+        "They protect only one variable, not an invariant over several",
+        "They need a database"
+      ],
+      "correct": 2,
+      "explanation": "Each atomic is safe on its own, but another thread can interleave between the two updates."
+    }
+  ]
+}

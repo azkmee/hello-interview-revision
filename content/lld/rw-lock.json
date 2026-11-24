@@ -1,0 +1,40 @@
+{
+  "id": "rw-lock",
+  "topic": "Concurrency",
+  "title": "Read-write lock",
+  "order": 5,
+  "added": "2026-11-24",
+  "points": [
+    "A read-write lock allows many readers at the same time but only one writer, and a writer excludes all readers.",
+    "It only helps when reads are heavy and writes are rare.",
+    "If writes are frequent, writers keep waiting for readers and the extra bookkeeping makes it slower than a plain lock."
+  ],
+  "trade": "Use for read-mostly data such as config or a cache. Versus a plain lock: more concurrency for reads, more overhead per acquire. Versus an atomic variable: handles multi-variable state but is heavier.",
+  "code": "ReadWriteLock rw = new ReentrantReadWriteLock();\n\nString get(String k) {\n    rw.readLock().lock();\n    try { return map.get(k); } finally { rw.readLock().unlock(); }\n}\nvoid put(String k, String v) {\n    rw.writeLock().lock();\n    try { map.put(k, v); } finally { rw.writeLock().unlock(); }\n}",
+  "test": "A product catalog is read thousands of times per second and updated a few times a day. Which lock fits, and what would make it a bad choice?",
+  "answer": "A read-write lock: readers run in parallel. It becomes a bad choice if writes become frequent, since writers wait on readers and the overhead outweighs the gain.",
+  "questions": [
+    {
+      "question": "A cache is updated on almost every request. Is a read-write lock a good fit?",
+      "options": [
+        "Yes, readers always run in parallel",
+        "No, with frequent writes the writers wait for readers and a plain lock is just as good or better",
+        "Yes, it removes the need for any other lock",
+        "No, it cannot protect maps"
+      ],
+      "correct": 1,
+      "explanation": "The benefit comes from many concurrent readers. With many writes the benefit disappears and overhead remains."
+    },
+    {
+      "question": "What does a read-write lock allow?",
+      "options": [
+        "Many writers or one reader",
+        "Many readers at once, or one exclusive writer",
+        "Only one thread at a time",
+        "Readers and a writer at the same time"
+      ],
+      "correct": 1,
+      "explanation": "Readers share the lock; a writer needs exclusive access."
+    }
+  ]
+}

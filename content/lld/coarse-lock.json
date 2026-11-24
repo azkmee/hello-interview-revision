@@ -1,0 +1,40 @@
+{
+  "id": "coarse-lock",
+  "topic": "Concurrency",
+  "title": "Coarse-grained lock",
+  "order": 3,
+  "added": "2026-11-24",
+  "points": [
+    "One lock guards all the shared state, for example a synchronized method or one lock around the whole booking system.",
+    "It is simple and hard to get wrong, so it is the default starting point.",
+    "The cost is overhead and waiting: threads touching unrelated data still queue behind each other."
+  ],
+  "trade": "Use it when load is moderate (human-triggered) or you cannot partition by resource. Move to fine-grained locks only when profiling shows contention. Versus fine-grained: simpler and no deadlock risk between locks, but lower throughput.",
+  "code": "class Booking {\n    synchronized boolean book(int seatId, String user) {\n        if (seats[seatId] != null) return false;\n        seats[seatId] = user;\n        return true;\n    }\n}",
+  "test": "Seat booking is used by humans at moderate load and seats are all stored in one shared structure. Which lock granularity do you start with and what is its downside?",
+  "answer": "A coarse-grained lock: simplest and correct. The downside is that bookings for different seats wait on each other.",
+  "questions": [
+    {
+      "question": "What is the main drawback of a coarse-grained lock?",
+      "options": [
+        "It can deadlock easily",
+        "Threads working on unrelated data still wait for each other",
+        "It cannot protect multiple variables",
+        "It needs CPU support"
+      ],
+      "correct": 1,
+      "explanation": "One lock serializes everything. Deadlock risk is a fine-grained concern, and a single lock can protect many variables."
+    },
+    {
+      "question": "Human-triggered traffic at moderate load, and the data cannot be partitioned by resource. What is the sensible choice?",
+      "options": [
+        "Thread confinement",
+        "Fine-grained locks",
+        "Coarse-grained lock",
+        "Atomic variable"
+      ],
+      "correct": 2,
+      "explanation": "The decision tree: multiple variables, low contention, no resource partition leads to a coarse lock. Atomics only fit a single variable."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "conc-correctness",
+  "topic": "Concurrency",
+  "title": "Concurrency correctness",
+  "order": 1,
+  "added": "2026-11-24",
+  "points": [
+    "Correctness in concurrency means preventing data corruption when multiple threads access shared state.",
+    "The danger only exists when state is both shared between threads and mutable; if either is missing, no synchronization is needed.",
+    "Synchronization is a trade-off: every mechanism adds overhead, makes some threads wait, or adds complexity, so pick the lightest one that protects the invariant."
+  ],
+  "trade": "Correctness comes first, then throughput. Start from what you are protecting (one variable or an invariant over several) and how much contention you expect. Related: race conditions (check-then-act, read-modify-write) are the bugs, and the lock/atomic/confinement concepts are the fixes.",
+  "test": "A service keeps a counter in a field but every request thread only reads it and it is never changed after startup. Do you need a lock, and why?",
+  "answer": "No. State that is shared but immutable cannot be corrupted, so no synchronization is needed.",
+  "questions": [
+    {
+      "question": "When is synchronization NOT needed?",
+      "options": [
+        "When state is shared and mutable but updates are rare",
+        "When there is no shared mutable state, e.g. data is immutable or thread-local",
+        "When the machine has only a few cores",
+        "When the code uses a database"
+      ],
+      "correct": 1,
+      "explanation": "Corruption needs shared AND mutable state. Rare updates (the first option) still race; core count doesn't remove the interleaving risk."
+    },
+    {
+      "question": "What does 'correctness' mean in concurrent code?",
+      "options": [
+        "The code runs faster with more threads",
+        "Threads never block each other",
+        "Shared state is never corrupted when threads access it at the same time",
+        "Every thread finishes in the same order it started"
+      ],
+      "correct": 2,
+      "explanation": "Correctness is about protecting shared state from corruption. Speed and non-blocking are performance goals that often trade against it."
+    }
+  ]
+}

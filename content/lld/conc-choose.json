@@ -1,0 +1,51 @@
+{
+  "id": "conc-choose",
+  "topic": "Concurrency",
+  "title": "Choosing a concurrency mechanism",
+  "order": 8,
+  "added": "2026-11-24",
+  "points": [
+    "First ask whether there is shared, mutable state; if not, no synchronization is needed.",
+    "If you protect a single variable, use an atomic variable.",
+    "If you protect multiple variables or an invariant and contention is not a concern (human-triggered, moderate load), use a lock: fine-grained if you can partition by resource, otherwise coarse-grained.",
+    "If contention is a concern (machine-triggered, high throughput) and you can partition by thread, use thread confinement."
+  ],
+  "trade": "Order of preference is roughly: no sharing, atomic, coarse lock, fine-grained lock, confinement as complexity and scale grow. Read-write lock is a variant for read-heavy data. The right answer depends on what you protect and the load, not on one tool being best.",
+  "test": "Walk through the decision for an airline seat booking API used by humans, then for an ingest pipeline of machine events keyed by seat.",
+  "answer": "Humans: multiple variables, moderate load, so a lock, fine-grained per seat if partitionable. Machine events: high throughput with contention, partition by key, so thread confinement.",
+  "questions": [
+    {
+      "question": "You protect a single counter shared across threads. What does the decision tree say?",
+      "options": [
+        "Coarse-grained lock",
+        "Atomic variable",
+        "Thread confinement",
+        "Fine-grained lock"
+      ],
+      "correct": 1,
+      "explanation": "Single variable leads to atomics. Locks are for multi-variable invariants."
+    },
+    {
+      "question": "Multi-variable invariant, human-triggered moderate load, and you can partition by resource. Which mechanism?",
+      "options": [
+        "Fine-grained locking",
+        "Coarse-grained locking",
+        "Thread confinement",
+        "Atomic variable"
+      ],
+      "correct": 0,
+      "explanation": "Contention is not a concern but partitioning by resource is possible, so per-resource locks. Coarse is the answer when you cannot partition."
+    },
+    {
+      "question": "Multi-variable invariant, machine-triggered high throughput, can partition by thread. Which mechanism?",
+      "options": [
+        "Read-write lock",
+        "Atomic variable",
+        "Coarse-grained locking",
+        "Thread confinement"
+      ],
+      "correct": 3,
+      "explanation": "Contention is a concern and work can be partitioned by thread, so confine data to threads and avoid locks."
+    }
+  ]
+}
